@@ -354,6 +354,9 @@ en:{sub:"West African house rules",roll:"Roll",newGame:"New game",rules:"Rules",
   create:"Start a private game",createNote:"Uses the rules, timer and points entry from New game.",createBtn:"Create game",
   lobby:"Private game",codeIs:"Game code",invite:"Invite players",inviteText:function(c){return "Join my Ludo Teranga game. Code: "+c},copied:"Invite copied.",
   waitingSeat:"Waiting for a player…",hostTag:"host",youTag:"you",emptyNote:"Seats still empty when you start are played by the computer.",
+  startMode:"When the game starts",startManual:"When I tap Start",startAuto:"By itself when full",startEarly:"Start now with the players here",
+  autoNoteHost:"The game starts by itself once every seat is taken. You can also start sooner, and empty seats go to the computer.",
+  autoNoteGuest:"The game starts once every seat is taken, or sooner if the host starts it.",startingNow:"Everyone is here. Starting…",
   startOnline:"Start game",waitHost:"Waiting for the host to start…",leave:"Leave game",waitAgain:"Waiting for the host to start the next game…",
   errNoRoom:"No game found with this code.",errStarted:"This game has already started.",errFull:"This game is full.",
   errNet:"Could not reach the game server. Check your connection and try again.",errPoints:function(n){return "You need "+n+" ★ to join this game."},
@@ -399,6 +402,9 @@ fr:{sub:"Règles de la maison, façon Afrique de l'Ouest",roll:"Lancer",newGame:
   create:"Lancer une partie privée",createNote:"Reprend les règles, le temps et la mise de Nouvelle partie.",createBtn:"Créer la partie",
   lobby:"Partie privée",codeIs:"Code de la partie",invite:"Inviter des joueurs",inviteText:function(c){return "Rejoins ma partie de Ludo Teranga. Code : "+c},copied:"Invitation copiée.",
   waitingSeat:"En attente d'un joueur…",hostTag:"hôte",youTag:"vous",emptyNote:"Les sièges encore vides au départ sont joués par l'ordinateur.",
+  startMode:"Début de la partie",startManual:"Quand je touche Commencer",startAuto:"Tout seul quand c'est complet",startEarly:"Commencer avec les joueurs présents",
+  autoNoteHost:"La partie démarre toute seule quand tous les sièges sont pris. Vous pouvez aussi commencer avant ; les sièges vides vont à l'ordinateur.",
+  autoNoteGuest:"La partie démarre quand tous les sièges sont pris, ou avant si l'hôte la lance.",startingNow:"Tout le monde est là. C'est parti…",
   startOnline:"Commencer",waitHost:"En attente de l'hôte…",leave:"Quitter la partie",waitAgain:"En attente de l'hôte pour la prochaine partie…",
   errNoRoom:"Aucune partie trouvée avec ce code.",errStarted:"Cette partie a déjà commencé.",errFull:"Cette partie est complète.",
   errNet:"Impossible de joindre le serveur de jeu. Vérifiez votre connexion et réessayez.",errPoints:function(n){return "Il vous faut "+n+" ★ pour rejoindre cette partie."},
@@ -985,12 +991,22 @@ function onRoom(){
   Object.keys(hb).forEach(function(id){if(net.hbv[id]!==hb[id]){net.hbv[id]=hb[id];net.seen[id]=Date.now()}});
   if(r.status==="lobby"){
     if(!hasMe(r)){var c=net.code;leaveRoom(true);if(++joinTries<4)joinRoom(c);else{onErr=L().errFull;openOnline()}return}
+    autoStartCheck(r);
     renderOnline();$("sheet-online").classList.add("open");return;
   }
   if(!r.game)return;
   if(!net.live||net.round!==r.round){rebuildRound();return}
   pumpEvents();
   if($("sheet-online").classList.contains("open"))renderOnline();
+}
+function lobbyFull(r){var n=(r.cfg&&r.cfg.count)||4;for(var i=0;i<n;i++)if(!seatAt(r,i))return false;return true}
+// When the owner chose an automatic start, the game begins a moment after the last seat is taken.
+function autoStartCheck(r){
+  if(!r.cfg.auto||!lobbyFull(r)){if(net.autoT){clearTimeout(net.autoT);net.autoT=null}return}
+  if(net.autoT)return;
+  var host=r.host===myId,last=seatAt(r,r.cfg.count-1),n=net;
+  if(!host&&!(last&&last.id===myId))return;
+  net.autoT=setTimeout(function(){if(net===n&&net.room.status==="lobby"&&net.room.cfg.auto&&lobbyFull(net.room))startOnline()},host?2500:9000);
 }
 function enter(code,room){
   net={code:code,room:room,es:null,applied:0,log:[],round:0,live:false,seen:{},hbv:{},since:Date.now(),beat:null};
@@ -1015,7 +1031,7 @@ function newCode(){var A="ABCDEFGHJKMNPQRSTUVWXYZ23456789",c="";for(var i=0;i<6;
 function createRoom(){
   var code=newCode(),stake=(cfg.stake||0)>balanceOf(meName())?0:(cfg.stake||0);
   var room={v:1,host:myId,created:Date.now(),status:"lobby",round:0,
-    cfg:{count:cfg.count,twoDice:cfg.twoDice,safe:cfg.safe,blockPass:cfg.blockPass,bonus:cfg.bonus,captureHome:cfg.captureHome,jail:cfg.jail!==false,homeBonus:cfg.homeBonus!==false,timer:cfg.timer||30,stake:stake},
+    cfg:{count:cfg.count,twoDice:cfg.twoDice,safe:cfg.safe,blockPass:cfg.blockPass,bonus:cfg.bonus,captureHome:cfg.captureHome,jail:cfg.jail!==false,homeBonus:cfg.homeBonus!==false,timer:cfg.timer||30,stake:stake,auto:!!cfg.autoStart},
     seats:{0:{id:myId,name:meName(),av:meAv()}}};
   onErr="";saveCfg();
   api("GET","",undefined,code).then(function(x){if(x)throw new Error("taken");return api("PUT","",room,code)})
@@ -1052,7 +1068,7 @@ function leaveRoom(quiet){
   if(!net)return;
   var n=net;net=null;
   if(n.es)n.es.close();
-  clearInterval(n.beat);
+  clearInterval(n.beat);clearTimeout(n.autoT);
   try{localStorage.removeItem("ludo-room")}catch(e){}
   if(n.room&&n.room.status==="lobby"){
     for(var i=0;i<4;i++){var s=seatAt(n.room,i);if(s&&s.id===myId)fetch(roomUrl(n.code,"/seats/"+i),{method:"PUT",headers:{"Content-Type":"application/json"},body:"null"}).catch(function(){})}
@@ -1086,7 +1102,7 @@ function renderOnline(){
     h='<h2>'+t.onTitle+'</h2><p class="note" style="margin:0">'+t.onNote+'</p>';
     h+='<div><h3>'+t.yourName+'</h3><div class="who"><input type="text" id="me-name" maxlength="12" autocomplete="off" placeholder="'+esc(meName())+'" value="'+esc((cfg.me&&cfg.me.name)||"")+'" aria-label="'+t.yourName+'"><span class="bal" id="me-bal">★ '+fmt(balanceOf(meName()))+'</span></div><div class="avs" id="avs-me" style="margin-top:8px"></div></div>';
     h+='<div><h3>'+t.joinTitle+'</h3><div class="who"><input type="text" id="join-code" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="'+t.codePh+'" value="'+esc(pendingCode)+'" aria-label="'+t.codePh+'"><button type="button" class="cta" id="join-go" style="padding:0 22px">'+t.join+'</button></div></div>';
-    h+='<div><h3>'+t.create+'</h3>'+seg([[2,"2"],[3,"3"],[4,"4"]],cfg.count,"ocount")+'<p class="note">'+t.createNote+'</p><button type="button" class="cta" id="create-go" style="width:100%;margin-top:10px">'+t.createBtn+'</button></div>';
+    h+='<div><h3>'+t.create+'</h3>'+seg([[2,"2"],[3,"3"],[4,"4"]],cfg.count,"ocount")+'<h3 style="margin-top:12px">'+t.startMode+'</h3>'+seg([["0",t.startManual],["1",t.startAuto]],cfg.autoStart?"1":"0","oauto")+'<p class="note">'+t.createNote+'</p><button type="button" class="cta" id="create-go" style="width:100%;margin-top:10px">'+t.createBtn+'</button></div>';
     h+=err+'<button type="button" class="ghost" id="on-close">'+t.close+'</button>';
   }else{
     var r=net.room,c=r.cfg||{},host=r.host===myId,bs=seatsFor(c.count||4);
@@ -1100,7 +1116,11 @@ function renderOnline(){
       h+='<li><em>'+(i+1)+'</em><i style="background:'+CSSC[bs[i]]+'"></i><b'+(s?"":' style="color:var(--muted);font-weight:400"')+'>'+(s?esc(String(s.name||"").slice(0,12)):t.waitingSeat)+'</b><span>'+tags.join(" · ")+'</span></li>';
     }
     h+='</ol>';
-    if(r.status==="lobby")h+=host?'<p class="note" style="margin:0">'+t.emptyNote+'</p><button type="button" class="cta" id="start-go">'+t.startOnline+'</button>':'<p class="note" style="margin:0">'+t.waitHost+'</p>';
+    if(r.status==="lobby"){
+      var full=lobbyFull(r);
+      h+='<p class="note" style="margin:0">'+(full&&c.auto?t.startingNow:host?(c.auto?t.autoNoteHost:t.emptyNote):(c.auto?t.autoNoteGuest:t.waitHost))+'</p>';
+      if(host)h+='<button type="button" class="cta" id="start-go">'+(c.auto&&!full?t.startEarly:t.startOnline)+'</button>';
+    }
     h+=err+'<button type="button" class="ghost" id="leave-go">'+t.leave+'</button>';
     if(r.status!=="lobby")h+='<button type="button" class="ghost" id="on-close">'+t.close+'</button>';
   }
@@ -1112,6 +1132,10 @@ function renderOnline(){
   on("invite-go",invite);
   on("start-go",startOnline);
   on("leave-go",function(){closeSheets();leaveRoom()});
+  Array.prototype.slice.call(p.querySelectorAll('[data-set="oauto"]')).forEach(function(b){b.addEventListener("click",function(){
+    cfg.autoStart=b.getAttribute("data-val")==="1";
+    Array.prototype.slice.call(p.querySelectorAll('[data-set="oauto"]')).forEach(function(x){x.setAttribute("aria-pressed",x===b)});
+  })});
   Array.prototype.slice.call(p.querySelectorAll('[data-set="ocount"]')).forEach(function(b){b.addEventListener("click",function(){
     cfg.count=parseInt(b.getAttribute("data-val"),10);
     Array.prototype.slice.call(p.querySelectorAll('[data-set="ocount"]')).forEach(function(x){x.setAttribute("aria-pressed",x===b)});
