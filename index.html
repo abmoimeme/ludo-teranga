@@ -74,7 +74,7 @@ h1 span{color:var(--accent)}
 
 .board{position:relative;width:100%;aspect-ratio:1;border-radius:14px;overflow:hidden;border:5px solid #0b102a;box-shadow:0 14px 30px rgba(0,0,0,.45)}
 .board svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.tok{position:absolute;width:6.6667%;height:6.6667%;padding:0;border:0;background:none;transition:left .13s linear,top .13s linear;z-index:2;cursor:default}
+.tok{position:absolute;width:6.6667%;height:6.6667%;padding:0;border:0;background:none;transition:left .1s linear,top .1s linear;z-index:2;cursor:default}
 .tok.slow{transition:left .42s ease,top .42s ease}
 .tok span{position:absolute;inset:11%;border-radius:50%;border:2px solid #0b102a;transform:scale(var(--s,1));transition:transform .15s;
   background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.75),rgba(255,255,255,0) 42%),var(--c);box-shadow:0 2px 3px rgba(0,0,0,.45)}
@@ -144,6 +144,7 @@ h1 span{color:var(--accent)}
 .seatbox{display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:12px;background:rgba(0,0,0,.2)}
 .who{display:flex;align-items:center;gap:10px}
 .who input{flex:1;min-width:0;font:inherit;font-weight:600;padding:9px 12px;border-radius:10px;border:1.5px solid var(--muted);background:var(--cloth);color:var(--ink);min-height:44px}
+.who input.bad{border-color:#ffb4a8}
 .who input:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
 .bal{font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
 .avs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
@@ -375,6 +376,8 @@ en:{sub:"West African house rules",roll:"Roll",newGame:"New game",rules:"Rules",
   autoNoteHost:"The game starts by itself once every seat is taken. You can also start sooner, and empty seats go to the computer.",
   autoNoteGuest:"The game starts once every seat is taken, or sooner if the host starts it.",startingNow:"Everyone is here. Starting…",
   startOnline:"Start game",waitHost:"Waiting for the host to start…",leave:"Leave game",waitAgain:"Waiting for the host to start the next game…",
+  rejoinTitle:"Getting you back into your game…",rejoinNote:"Reconnecting. Your seat and your pieces are kept.",rejoinStop:"Stop and play on this phone",errOld:"This game needs the newest version. Close the game completely and open it again.",
+  errName:"Type your name first, then join.",errNameTaken:"Someone in this game already uses that name. Choose a different one.",namePh:"Type your name",
   errNoRoom:"No game found with this code.",errStarted:"This game has already started.",errFull:"This game is full.",
   errNet:"Could not reach the game server. Check your connection and try again.",errPoints:function(n){return "You need "+n+" ★ to join this game."},
   onlineTag:"online",awayTag:"away",roomLine:function(c){return "Online · "+c},
@@ -427,6 +430,8 @@ fr:{sub:"Règles de la maison, façon Afrique de l'Ouest",roll:"Lancer",newGame:
   autoNoteHost:"La partie démarre toute seule quand tous les sièges sont pris. Vous pouvez aussi commencer avant ; les sièges vides vont à l'ordinateur.",
   autoNoteGuest:"La partie démarre quand tous les sièges sont pris, ou avant si l'hôte la lance.",startingNow:"Tout le monde est là. C'est parti…",
   startOnline:"Commencer",waitHost:"En attente de l'hôte…",leave:"Quitter la partie",waitAgain:"En attente de l'hôte pour la prochaine partie…",
+  rejoinTitle:"Retour dans votre partie…",rejoinNote:"Reconnexion en cours. Votre siège et vos pions sont gardés.",rejoinStop:"Arrêter et jouer sur ce téléphone",errOld:"Cette partie demande la dernière version. Fermez complètement le jeu puis rouvrez-le.",
+  errName:"Écrivez d'abord votre nom, puis rejoignez.",errNameTaken:"Quelqu'un dans cette partie utilise déjà ce nom. Choisissez-en un autre.",namePh:"Écrivez votre nom",
   errNoRoom:"Aucune partie trouvée avec ce code.",errStarted:"Cette partie a déjà commencé.",errFull:"Cette partie est complète.",
   errNet:"Impossible de joindre le serveur de jeu. Vérifiez votre connexion et réessayez.",errPoints:function(n){return "Il vous faut "+n+" ★ pour rejoindre cette partie."},
   onlineTag:"en ligne",awayTag:"absent",roomLine:function(c){return "En ligne · "+c},
@@ -814,7 +819,7 @@ function rollMsg(){return isHuman(g.turn)?L().yourRoll(nameOf(g.turn)):L().roll1
 function beginTurn(){
   phase="roll";idleAt=Date.now();renderAll();say(rollMsg());startClock();
   if(!live()){try{localStorage.setItem("ludo-game3",JSON.stringify(g))}catch(e){}}
-  if(control(g.turn)==="cpu")later(doRoll,750);
+  if(control(g.turn)==="cpu")later(doRoll,500);
   pumpEvents();
 }
 function doRoll(){
@@ -843,7 +848,7 @@ function step(){
   var pd=playableDice(g);
   if(!pd.length){
     phase="anim";renderAll();
-    if(g.dice.length){say(L().noMove);sfx("nomove");later(finish,900)}else finish();
+    if(g.dice.length){say(L().noMove);sfx("nomove");later(finish,700)}else finish();
     return;
   }
   if(pd.indexOf(selDie)<0)selDie=pd[0];
@@ -851,11 +856,11 @@ function step(){
   var who=control(g.turn);
   if(who!=="me"){
     say(L().thinking(nameOf(g.turn)));
-    if(who==="cpu")later(function(){var m=chooseMove(g);doMove(m.ti,m.di)},700);
+    if(who==="cpu")later(function(){var m=chooseMove(g);doMove(m.ti,m.di)},450);
     pumpEvents();return;
   }
   var op=options();
-  if(op.length===1){say(L().pick);later(function(){doMove(op[0].ti,op[0].di)},550)}
+  if(op.length===1){say(L().pick);later(function(){doMove(op[0].ti,op[0].di)},320)}
   else{say(g.opts.twoDice&&g.dice.length===2&&g.dice[0]!==g.dice[1]?L().pickDie:L().pick);startClock()}
 }
 function finish(){endRoll(g);beginTurn()}
@@ -885,7 +890,7 @@ async function doMove(ti,di,remote){
   if(!reduced&&!freed){
     el.style.zIndex=6;
     var s0=res.from===-1?0:res.from+1;
-    for(var p=s0;p<=res.to;p++){place(el,cellOf(pl.seat,ti,p),1);sfx(res.from===-1?"out":"step");await sleep(140);if(e!==epoch)return}
+    for(var p=s0;p<=res.to;p++){place(el,cellOf(pl.seat,ti,p),1);sfx(res.from===-1?"out":"step");await sleep(105);if(e!==epoch)return}
     el.style.zIndex="";
   }else sfx(res.from===-1||freed?"out":"step");
   if(placed)sfx("win");else if(caps){sfx("capture");buzz(90)}else if(home)sfx("home");
@@ -912,7 +917,29 @@ function api(method,path,body,code){
   return fetch(roomUrl(code||net.code,path),{method:method,headers:{"Content-Type":"application/json"},body:body===undefined?undefined:JSON.stringify(body)})
     .then(function(r){if(!r.ok)throw new Error("net");return r.json()});
 }
-function evAt(n){var e=net&&net.room&&net.room.ev;return e?e[n]:undefined}
+var PROTO=2,rejoining=false;
+// The agreed list of inputs, in order. Inputs are only ever added, never overwritten. Each one says which
+// position it was meant for; if two phones send an input for the same position, the first to arrive counts
+// and the other is ignored by everyone.
+function evList(){
+  if(net.seqVer===net.evVer&&net.seq)return net.seq;
+  var ev=net.room.ev||{},num=/^\d+$/,out=[];
+  var ks=Object.keys(ev).filter(function(k){return ev[k]!==null&&ev[k]!==undefined&&typeof ev[k]==="object"});
+  ks.sort(function(a,b){var na=num.test(a),nb=num.test(b);if(na&&nb)return a-b;if(na)return -1;if(nb)return 1;return a<b?-1:a>b?1:0});
+  ks.forEach(function(k){var e=ev[k],pos=(e.s===undefined&&num.test(k))?+k:e.s;if(pos===out.length)out.push(e)});
+  net.seq=out;net.seqVer=net.evVer;return out;
+}
+function evAt(n){return net&&net.room?evList()[n]:undefined}
+// Whether an input makes sense for the game as it stands. An input that does not is skipped by every phone.
+function evOk(gm,e){
+  if(!e||gm.over)return false;
+  if(e.t==="r"){
+    if(gm.dice.length||!Array.isArray(e.d)||e.d.length!==(gm.opts.twoDice?2:1))return false;
+    return e.d.every(function(v){return v===1||v===2||v===3||v===4||v===5||v===6});
+  }
+  if(e.t==="m")return gm.dice.length>0&&e.di>=0&&e.di<gm.dice.length&&e.ti>=0&&e.ti<4&&canMove(gm,gm.turn,e.ti,gm.dice[e.di])!==null;
+  return e.t==="x";
+}
 function seatAt(r,i){return r&&r.seats?r.seats[i]:undefined}
 function canon(e){return e.t+"|"+(e.d?e.d.join(","):"")+"|"+(e.ti===undefined?"":e.ti)+"|"+(e.di===undefined?"":e.di)}
 function fresh(id){return id===myId||Date.now()-(net.seen[id]||net.since)<25000}
@@ -937,13 +964,23 @@ function cleanAv(av,seat){
   return {t:"e",v:DEF_AV[seat]};
 }
 function pushEv(e){
-  var n=net.applied;
-  if(!net.room.ev)net.room.ev={};
-  net.room.ev[n]=e;net.log[n]=canon(e);net.applied=n+1;
-  api("PUT","/ev/"+n,e).catch(function(){setTimeout(resync,1500)});
+  var n=net.applied,me=net;
+  e.s=n;net.log[n]=canon(e);net.applied=n+1;
+  if((net.room.v||1)>=2){
+    api("POST","/ev",e).then(function(res){
+      if(net!==me||!res||!res.name)return;
+      if(!net.room.ev)net.room.ev={};
+      if(!net.room.ev[res.name]){net.room.ev[res.name]=e;net.evVer++;net.ok=0;pumpEvents()}
+    }).catch(function(){setTimeout(function(){resync(true)},1200)});
+  }else{
+    if(!net.room.ev)net.room.ev={};
+    net.room.ev[n]=e;net.evVer++;
+    api("PUT","/ev/"+n,e).catch(function(){setTimeout(function(){resync(true)},1200)});
+  }
 }
 // Applies one input to the game without any animation. Used to catch up after joining or reconnecting.
 function simEvent(gm,e){
+  if(!evOk(gm,e))return;
   if(e.t==="r"){gm.dice=e.d.slice();gm.rolled=e.d.slice();gm.bonus=false}
   else if(e.t==="m"){applyMove(gm,gm.turn,e.ti,gm.dice[e.di]);gm.dice.splice(e.di,1)}
   else{gm.dice=[];gm.rolled=null;gm.bonus=false;endRoll(gm);return}
@@ -952,23 +989,52 @@ function simEvent(gm,e){
 }
 function pumpEvents(){
   if(!live()||!g||net.round!==net.room.round)return;
-  var k=net.applied-1;
-  if(k>=0&&evAt(k)&&canon(evAt(k))!==net.log[k]){rebuildRound();return}
-  var e=evAt(net.applied);if(!e||g.over)return;
+  var seq=evList(),lim=Math.min(net.applied,seq.length);
+  // an input this phone played is not the one that counted: redo the game from the agreed list
+  for(;net.ok<lim;net.ok++){if(canon(seq[net.ok])!==net.log[net.ok]){rebuildRound();return}}
+  if(seq.length<=net.applied||g.over)return;
+  // this phone fell behind (it was asleep or in another app): jump straight to the present
+  if(seq.length-net.applied>3){rebuildRound();return}
   if(phase!=="roll"&&phase!=="move")return;
-  if((e.t==="r"&&phase!=="roll")||(e.t==="m"&&phase!=="move")){rebuildRound();return}
-  net.log[net.applied++]=canon(e);
+  var e=seq[net.applied];
+  net.log[net.applied]=canon(e);net.applied++;net.ok=net.applied;
+  if(!evOk(g,e)){pumpEvents();return}
   if(e.t==="r")showRoll(e.d);else if(e.t==="m")doMove(e.ti,e.di,true);else timeUp(true);
 }
-function resync(){
+function resync(force){
   if(!net)return;var n=net;
-  api("GET","").then(function(r){if(net!==n||!r)return;net.room=r;if(r.status!=="lobby"&&r.game)rebuildRound();else onRoom()}).catch(function(){});
+  api("GET","").then(function(r){
+    if(net!==n||!r)return;
+    net.room=r;net.evVer++;net.ok=0;net.maxKey="";net.lastMsg=Date.now();
+    if(r.status!=="lobby"&&r.game&&(force||!net.live||net.round!==r.round))rebuildRound();else onRoom();
+  }).catch(function(){});
 }
+// Safety net for a connection that has gone quiet: ask for any inputs this phone has not seen.
+function pollEv(){
+  var n=net,ev=net.room.ev||{},last="";
+  Object.keys(ev).forEach(function(k){if(!/^\d+$/.test(k)&&k>last)last=k});
+  var q=(net.room.v||1)>=2&&last?"?orderBy="+encodeURIComponent('"$key"')+"&startAt="+encodeURIComponent('"'+last+'"'):"";
+  fetch(roomUrl(net.code,"/ev")+q).then(function(r){return r.ok?r.json():null}).then(function(d){
+    if(net!==n||!d)return;
+    var ch=false;if(!net.room.ev)net.room.ev={};
+    Object.keys(d).forEach(function(k){if(d[k]!==null&&d[k]!==undefined&&!net.room.ev[k]){net.room.ev[k]=d[k];ch=true}});
+    if(ch){net.evVer++;net.ok=0;pumpEvents()}
+  }).catch(function(){});
+}
+function wakeNet(){
+  if(!net)return;
+  api("PUT","/hb/"+myId,Date.now()).catch(function(){});
+  if(Date.now()-net.lastMsg>10000)openStream();
+  resync();
+}
+document.addEventListener("visibilitychange",function(){if(!document.hidden)wakeNet()});
+window.addEventListener("online",wakeNet);
+window.addEventListener("pageshow",function(ev){if(ev.persisted)wakeNet()});
 function rebuildRound(){
   var r=net.room,gm=r.game;if(!gm||!gm.seats)return;
   var c=r.cfg||{};
   epoch++;stopClock();closeSheets();
-  net.live=true;net.round=r.round;net.applied=0;net.log=[];
+  net.live=true;net.round=r.round;net.applied=0;net.ok=0;net.log=[];rejoining=false;
   g=newGame({seats:gm.seats.map(function(s){return {seat:s.seat,kind:s.kind==="human"?"human":"cpu"}}),twoDice:c.twoDice,safe:c.safe,blockPass:c.blockPass,bonus:c.bonus,captureHome:c.captureHome,jail:c.jail,homeBonus:c.homeBonus});
   g.stake=c.stake||0;g.pot=g.stake*g.players.length;g.gains={};g.v=3;
   g.players.forEach(function(pl,i){
@@ -983,8 +1049,9 @@ function rebuildRound(){
       saveBank();
     }
   });
-  var e;
-  while((e=evAt(net.applied))&&!g.over){simEvent(g,e);net.log[net.applied]=canon(e);net.applied++}
+  var seq=evList();
+  for(var q=0;q<seq.length;q++){simEvent(g,seq[q]);net.log[q]=canon(seq[q])}
+  net.applied=net.ok=seq.length;
   mount();
   if(g.over){phase="over";renderAll();showWin()}
   else if(g.dice.length){selDie=0;step()}
@@ -992,19 +1059,26 @@ function rebuildRound(){
 }
 function setPath(path,val){
   var parts=String(path).split("/").filter(Boolean);
+  net.evVer++;
+  if(!parts.length||(parts[0]==="ev"&&parts.length===1)){net.ok=0;net.maxKey=""}
+  else if(parts[0]==="ev"){if(parts[1]<=(net.maxKey||""))net.ok=0;else net.maxKey=parts[1]}
   if(!parts.length){net.room=val||{};return}
   var o=net.room=net.room||{};
   for(var i=0;i<parts.length-1;i++){if(o[parts[i]]===null||typeof o[parts[i]]!=="object")o[parts[i]]={};o=o[parts[i]]}
   if(val===null)delete o[parts[parts.length-1]];else o[parts[parts.length-1]]=val;
 }
 function openStream(){
+  if(net.es){try{net.es.close()}catch(e){}}
   var es=net.es=new EventSource(roomUrl(net.code));
-  es.addEventListener("put",function(m){if(!net||net.es!==es)return;var d=JSON.parse(m.data);setPath(d.path,d.data);onRoom()});
+  net.lastMsg=Date.now();
+  es.addEventListener("put",function(m){if(!net||net.es!==es)return;net.lastMsg=Date.now();var d=JSON.parse(m.data);setPath(d.path,d.data);onRoom()});
   es.addEventListener("patch",function(m){
     if(!net||net.es!==es)return;
+    net.lastMsg=Date.now();
     var d=JSON.parse(m.data),base=d.path==="/"?"":d.path;
     Object.keys(d.data||{}).forEach(function(k){setPath(base+"/"+k,d.data[k])});onRoom();
   });
+  es.addEventListener("keep-alive",function(){if(net&&net.es===es)net.lastMsg=Date.now()});
 }
 function hasMe(r){
   for(var i=0;i<4;i++){var s=seatAt(r,i);if(s&&s.id===myId)return true}
@@ -1035,14 +1109,17 @@ function autoStartCheck(r){
   net.autoT=setTimeout(function(){if(net===n&&net.room.status==="lobby"&&net.room.cfg.auto&&lobbyFull(net.room))startOnline()},host?2500:9000);
 }
 function enter(code,room){
-  net={code:code,room:room,es:null,applied:0,log:[],round:0,live:false,seen:{},hbv:{},since:Date.now(),beat:null};
+  net={code:code,room:room,es:null,applied:0,ok:0,log:[],round:0,live:false,seen:{},hbv:{},since:Date.now(),beat:null,evVer:1,seqVer:0,seq:null,lastMsg:Date.now()};
   try{localStorage.setItem("ludo-room",code)}catch(e){}
   openStream();
   api("PUT","/hb/"+myId,Date.now()).catch(function(){});
   net.beat=setInterval(function(){
     if(!net)return;
     api("PUT","/hb/"+myId,Date.now()).catch(function(){});
+    var quiet=Date.now()-net.lastMsg;
+    if(quiet>45000)openStream();
     if(!live()||!g||g.over)return;
+    if(quiet>7000)pollEv();
     renderChips();
     // A seat whose player has gone quiet is played by the host's device so the game keeps moving.
     if((phase==="roll"||phase==="move")&&Date.now()-idleAt>6000&&control(g.turn)==="cpu"){
@@ -1050,13 +1127,21 @@ function enter(code,room){
     }
   },5000);
 }
+// A player must pick a name before creating or joining an online game.
+function hasName(){var hs=humanSeats();return !!(((cfg.me&&cfg.me.name)||"").trim()||(hs.length&&(cfg.names[hs[0]]||"").trim()))}
+function needName(){
+  if(hasName())return false;
+  onErr=L().errName;renderOnline();
+  var el=$("me-name");if(el){el.focus();el.classList.add("bad")}
+  return true;
+}
 function meName(){var hs=humanSeats();return ((cfg.me&&cfg.me.name)||"").trim()||nameFor(hs.length?hs[0]:0)}
 function meAv(){var p=profileOf(meName());return cleanAv((cfg.me&&cfg.me.av)||(p&&p.av),0)}
 function saveCfg(){try{localStorage.setItem("ludo-cfg2",JSON.stringify(cfg))}catch(e){}}
 function newCode(){var A="ABCDEFGHJKMNPQRSTUVWXYZ23456789",c="";for(var i=0;i<6;i++)c+=A.charAt(Math.floor(Math.random()*A.length));return c}
 function createRoom(){
   var code=newCode(),stake=(cfg.stake||0)>balanceOf(meName())?0:(cfg.stake||0);
-  var room={v:1,host:myId,created:Date.now(),status:"lobby",round:0,
+  var room={v:PROTO,host:myId,created:Date.now(),status:"lobby",round:0,
     cfg:{count:cfg.count,twoDice:cfg.twoDice,safe:cfg.safe,blockPass:cfg.blockPass,bonus:cfg.bonus,captureHome:cfg.captureHome,jail:cfg.jail!==false,homeBonus:cfg.homeBonus!==false,timer:cfg.timer||30,stake:stake,auto:!!cfg.autoStart},
     seats:{0:{id:myId,name:meName(),av:meAv(),fc:myFc}}};
   onErr="";saveCfg();publishMe();
@@ -1064,23 +1149,30 @@ function createRoom(){
     .then(function(){joinTries=0;enter(code,room);renderOnline()})
     .catch(function(){onErr=L().errNet;renderOnline()});
 }
-function joinRoom(code){
+function joinRoom(code,tries){
   code=String(code||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
   onErr="";saveCfg();publishMe();
   if(code.length!==6){onErr=L().errNoRoom;renderOnline();return}
   api("GET","",undefined,code).then(function(r){
-    if(!r||!r.cfg){try{localStorage.removeItem("ludo-room")}catch(e){}onErr=L().errNoRoom;renderOnline();return}
+    if(!r||!r.cfg){try{localStorage.removeItem("ludo-room")}catch(e){}rejoining=false;onErr=L().errNoRoom;renderOnline();return}
+    if((r.v||1)>PROTO){rejoining=false;onErr=L().errOld;renderOnline();return}
     var n=r.cfg.count,free=-1;
     for(var i=0;i<n;i++)if(!seatAt(r,i)&&free<0)free=i;
-    if(hasMe(r)){enter(code,r);onRoom();return}
-    if(r.status!=="lobby"){onErr=L().errStarted;renderOnline();return}
+    if(hasMe(r)){rejoining=false;enter(code,r);onRoom();return}
+    rejoining=false;
+    if(r.status!=="lobby"){try{localStorage.removeItem("ludo-room")}catch(e){}onErr=L().errStarted;renderOnline();return}
     if(free<0){onErr=L().errFull;renderOnline();return}
     if((r.cfg.stake||0)>balanceOf(meName())){onErr=L().errPoints(fmt(r.cfg.stake));renderOnline();return}
+    for(var j=0;j<n;j++){var os=seatAt(r,j);if(os&&keyOf(os.name)===keyOf(meName())){onErr=L().errNameTaken;renderOnline();return}}
     var seat={id:myId,name:meName(),av:meAv(),fc:myFc};
     return api("PUT","/seats/"+free,seat,code).then(function(){
       if(!r.seats)r.seats={};r.seats[free]=seat;pendingCode="";enter(code,r);onRoom();
     });
-  }).catch(function(){onErr=L().errNet;renderOnline()});
+  }).catch(function(){
+    tries=tries||0;
+    if(rejoining&&tries<10){setTimeout(function(){if(rejoining&&!net)joinRoom(code,tries+1)},1200+tries*400);return}
+    rejoining=false;onErr=L().errNet;renderOnline();
+  });
 }
 function startOnline(){
   var r=net.room,n=r.cfg.count,bs=seatsFor(n),seats=[];
@@ -1124,9 +1216,11 @@ function renderOnline(){
   var t=L(),p=$("panel-online"),h="",err='<p class="err" role="alert">'+esc(onErr)+'</p>';
   if(!DB){
     h='<h2>'+t.onTitle+'</h2><p class="note" style="margin:0">'+t.onNotSet+'</p><button type="button" class="ghost" id="on-close">'+t.close+'</button>';
+  }else if(!net&&rejoining){
+    h='<h2>'+t.rejoinTitle+'</h2><p class="note" style="margin:0">'+t.rejoinNote+'</p><button type="button" class="ghost" id="rejoin-stop">'+t.rejoinStop+'</button>';
   }else if(!net){
     h='<h2>'+t.onTitle+'</h2><p class="note" style="margin:0">'+t.onNote+'</p>';
-    h+='<div><h3>'+t.yourName+'</h3><div class="who"><input type="text" id="me-name" maxlength="12" autocomplete="off" placeholder="'+esc(meName())+'" value="'+esc((cfg.me&&cfg.me.name)||"")+'" aria-label="'+t.yourName+'"><span class="bal" id="me-bal">★ '+fmt(balanceOf(meName()))+'</span></div><div class="avs" id="avs-me" style="margin-top:8px"></div></div>';
+    h+='<div><h3>'+t.yourName+'</h3><div class="who"><input type="text" id="me-name" maxlength="12" autocomplete="off" placeholder="'+esc(hasName()?meName():t.namePh)+'" value="'+esc((cfg.me&&cfg.me.name)||"")+'" aria-label="'+t.yourName+'"><span class="bal" id="me-bal">★ '+fmt(balanceOf(meName()))+'</span></div><div class="avs" id="avs-me" style="margin-top:8px"></div></div>';
     h+='<div><h3>'+t.joinTitle+'</h3><div class="who"><input type="text" id="join-code" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="'+t.codePh+'" value="'+esc(pendingCode)+'" aria-label="'+t.codePh+'"><button type="button" class="cta" id="join-go" style="padding:0 22px">'+t.join+'</button></div></div>';
     h+='<div><h3>'+t.create+'</h3>'+seg([[2,"2"],[3,"3"],[4,"4"]],cfg.count,"ocount")+'<h3 style="margin-top:12px">'+t.startMode+'</h3>'+seg([["0",t.startManual],["1",t.startAuto]],cfg.autoStart?"1":"0","oauto")+'<p class="note">'+t.createNote+'</p><button type="button" class="cta" id="create-go" style="width:100%;margin-top:10px">'+t.createBtn+'</button></div>';
     h+=friendsHTML();
@@ -1156,8 +1250,9 @@ function renderOnline(){
   p.innerHTML=h;
   var on=function(id,fn){var el=$(id);if(el)el.addEventListener("click",fn)};
   on("on-close",closeSheets);
-  on("join-go",function(){joinTries=0;joinRoom($("join-code").value)});
-  on("create-go",createRoom);
+  on("rejoin-stop",function(){rejoining=false;try{localStorage.removeItem("ludo-room")}catch(e){}closeSheets()});
+  on("join-go",function(){var c=$("join-code").value;pendingCode=fcClean(c).slice(0,6);if(needName())return;joinTries=0;joinRoom(c)});
+  on("create-go",function(){if(!needName())createRoom()});
   on("invite-go",invite);
   on("start-go",startOnline);
   on("leave-go",function(){closeSheets();leaveRoom()});
@@ -1253,9 +1348,8 @@ function clearInvite(k){delete invites[k];dbx("PUT","/inbox/"+myFc+"/"+k,null).c
 function acceptInvite(code){
   if(net)leaveRoom();
   closeSheets();joinTries=0;pendingCode=code;onErr="";
-  var hs=humanSeats(),named=((cfg.me&&cfg.me.name)||"").trim()||(hs.length&&(cfg.names[hs[0]]||"").trim());
   openOnline();
-  if(named)joinRoom(code);
+  if(!needName())joinRoom(code);
 }
 function renderInvite(){
   var bar=$("invite-bar"),ks=Object.keys(invites);
@@ -1491,8 +1585,10 @@ function boot(data){
   }
   var savedRoom="";
   try{savedRoom=localStorage.getItem("ludo-room")||""}catch(e){}
-  if(DB&&pendingCode){closeSheets();if(savedRoom===pendingCode)joinRoom(pendingCode);else openOnline()}
-  else if(DB&&savedRoom)joinRoom(savedRoom);
+  if(DB&&savedRoom&&(!pendingCode||savedRoom===pendingCode)){
+    // this phone was in an online game: go straight back to it and keep trying if the network is slow
+    closeSheets();rejoining=true;openOnline();joinRoom(savedRoom);
+  }else if(DB&&pendingCode){closeSheets();openOnline()}
   if(DB){
     openInbox();publishMe();
     if(fcClean(pendingFriend).length===8&&!pendingCode){closeSheets();openOnline();addFriendByCode(pendingFriend)}
