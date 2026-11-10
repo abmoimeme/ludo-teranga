@@ -361,7 +361,7 @@ en:{sub:"West African house rules",roll:"Roll",newGame:"New game",rules:"Rules",
   potLost:"The computer takes the pot. Win points back in a friendly game.",
   soundBlocked:"Sound is blocked on this device. Check the volume and the silent switch.",soundOn:"♪ On",soundOff:"♪ Off",scores:"Scores",lbTitle:"Leaderboard",recent:"Recent games",noGames:"No finished games yet. Finish a game to appear here.",
   cols:["Player","★","Wins","Games","Catches","Run"],ord:["1st","2nd","3rd","4th"],results:"Final places",
-  finishMsg:function(n,p){return n+" finishes "+p+"!"},potSplit:function(p){return "Pot: "+p+" ★ · 1st takes 70%, 2nd 30%"},potWord:"pot",timer:"Time per turn",off:"Off",sec:function(n){return n+" s"},timeUp:function(n){return n+" ran out of time"},
+  finishMsg:function(n,p){return n+" finishes "+p+"!"},potSplit:function(p){return "Pot: "+p+" ★ · 1st takes 70%, 2nd 30%"},potWord:"pot",timer:"Time per turn",off:"Off",sec:function(n){return n+" s"},timeUp:function(n){return n+" ran out of time"},autoMove:function(n){return "Time is up. A move was made for "+n+"."},
   online:"Play online",onTitle:"Play online",onNote:"Play a private game with people in other places. Only people who have your invite can join.",
   onNotSet:"Online play is not switched on for this site yet.",yourName:"Your name",joinTitle:"Join with a code",codePh:"CODE",join:"Join",
   create:"Start a private game",createNote:"Uses the rules, timer and points entry from New game.",createBtn:"Create game",
@@ -401,7 +401,7 @@ en:{sub:"West African house rules",roll:"Roll",newGame:"New game",rules:"Rules",
     home:"A piece that captures goes straight home.",
     end:"You need the exact number to reach the centre. The first player with all four pieces home wins. With 3 or 4 players, the game goes on to decide the other places.",
     pts:"Points: +10 ★ for a capture, +25 ★ for each piece home, +100 ★ for 1st place, +50 ★ for 2nd, +25 ★ for 3rd. In a points game with 3 or 4 players, 1st takes 70% of the pot and 2nd takes 30%. With 2 players the winner takes it all.",
-    timer:function(n){return "Each player has "+n+" seconds to play. When time runs out, the turn passes to the next player."}}},
+    timer:function(n){return "Each player has "+n+" seconds to play. If time runs out before the roll, the turn passes. If it runs out after the roll, the game moves a piece for you."}}},
 fr:{sub:"Règles de la maison, façon Afrique de l'Ouest",roll:"Lancer",newGame:"Nouvelle partie",rules:"Règles",start:"Commencer",close:"Fermer",again:"Rejouer",
   colors:["Rouge","Vert","Jaune","Bleu"],cpu:"Ordi",player:"Joueur ",
   yourRoll:function(n){return n+", lance le dé !"},roll1:function(n){return n+" lance le dé"},
@@ -413,7 +413,7 @@ fr:{sub:"Règles de la maison, façon Afrique de l'Ouest",roll:"Lancer",newGame:
   potLost:"L'ordinateur prend la cagnotte. Regagnez des points en partie amicale.",
   soundBlocked:"Le son est bloqué sur cet appareil. Vérifiez le volume et le mode silencieux.",soundOn:"♪ Oui",soundOff:"♪ Non",scores:"Scores",lbTitle:"Classement",recent:"Parties récentes",noGames:"Aucune partie terminée. Finissez une partie pour apparaître ici.",
   cols:["Joueur","★","Victoires","Parties","Captures","Série"],ord:["1er","2e","3e","4e"],results:"Classement final",
-  finishMsg:function(n,p){return n+" termine "+p+" !"},potSplit:function(p){return "Cagnotte : "+p+" ★ · 70 % au 1er, 30 % au 2e"},potWord:"cagnotte",timer:"Temps par tour",off:"Sans",sec:function(n){return n+" s"},timeUp:function(n){return "Temps écoulé pour "+n},
+  finishMsg:function(n,p){return n+" termine "+p+" !"},potSplit:function(p){return "Cagnotte : "+p+" ★ · 70 % au 1er, 30 % au 2e"},potWord:"cagnotte",timer:"Temps par tour",off:"Sans",sec:function(n){return n+" s"},timeUp:function(n){return "Temps écoulé pour "+n},autoMove:function(n){return "Temps écoulé. Un coup a été joué pour "+n+"."},
   online:"Jouer en ligne",onTitle:"Jouer en ligne",onNote:"Jouez une partie privée avec des personnes ailleurs. Seules les personnes invitées peuvent entrer.",
   onNotSet:"Le jeu en ligne n'est pas encore activé sur ce site.",yourName:"Votre nom",joinTitle:"Rejoindre avec un code",codePh:"CODE",join:"Rejoindre",
   create:"Lancer une partie privée",createNote:"Reprend les règles, le temps et la mise de Nouvelle partie.",createBtn:"Créer la partie",
@@ -453,7 +453,7 @@ fr:{sub:"Règles de la maison, façon Afrique de l'Ouest",roll:"Lancer",newGame:
     home:"Le pion qui capture rentre directement au centre.",
     end:"Il faut le nombre exact pour atteindre le centre. Le premier à rentrer ses quatre pions gagne. À 3 ou 4 joueurs, la partie continue pour les autres places.",
     pts:"Points : +10 ★ par capture, +25 ★ par pion rentré, +100 ★ pour la 1re place, +50 ★ pour la 2e, +25 ★ pour la 3e. En partie à points à 3 ou 4 joueurs, le 1er prend 70 % de la cagnotte et le 2e 30 %. À 2 joueurs, le gagnant prend tout.",
-    timer:function(n){return "Chaque joueur a "+n+" secondes pour jouer. Quand le temps est écoulé, le tour passe au joueur suivant."}}}
+    timer:function(n){return "Chaque joueur a "+n+" secondes pour jouer. Si le temps est écoulé avant le lancer, le tour passe. S'il est écoulé après le lancer, le jeu déplace un pion pour vous."}}}
 };
 var lang="en";
 try{var sv=localStorage.getItem("ludo-lang");if(sv==="fr"||sv==="en")lang=sv}catch(e){}
@@ -643,6 +643,11 @@ function startClock(){
 }
 function timeUp(remote){
   if(phase!=="roll"&&phase!=="move")return;
+  if(phase==="move"&&!remote){
+    // the dice are already rolled: play a move for the player instead of losing the turn
+    var auto=chooseMove(g);
+    if(auto){stopClock();sfx("timeup");say(L().autoMove(nameOf(g.turn)));doMove(auto.ti,auto.di);return}
+  }
   if(live()&&!remote)pushEv({t:"x"});
   stopClock();
   sfx("timeup");say(L().timeUp(nameOf(g.turn)));
