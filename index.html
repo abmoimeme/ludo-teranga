@@ -670,7 +670,7 @@ function startGame(){
   if(net)leaveRoom(true);
   epoch++;stopClock();
   var seats=seatsFor(cfg.count).map(function(s){return {seat:s,kind:cfg.kinds[s]}});
-  g=newGame({seats:seats,twoDice:cfg.twoDice,safe:cfg.safe,blockPass:cfg.blockPass,bonus:cfg.bonus,captureHome:cfg.captureHome,jail:cfg.jail,homeBonus:cfg.homeBonus});
+  g=newGame({seats:seats,twoDice:cfg.twoDice,safe:cfg.safe,blockPass:cfg.blockPass,bonus:cfg.bonus,captureHome:false,jail:cfg.jail,homeBonus:cfg.homeBonus});
   g.stake=cfg.stake>minBal()?0:(cfg.stake||0);g.pot=g.stake*g.players.length;g.gains={};g.v=3;
   g.players.forEach(function(pl){
     var s=pl.seat;
@@ -1169,7 +1169,7 @@ function newCode(){var A="ABCDEFGHJKMNPQRSTUVWXYZ23456789",c="";for(var i=0;i<6;
 function createRoom(){
   var code=newCode(),stake=(cfg.stake||0)>balanceOf(meName())?0:(cfg.stake||0);
   var room={v:PROTO,host:myId,created:Date.now(),status:"lobby",round:0,
-    cfg:{count:cfg.count,twoDice:cfg.twoDice,safe:cfg.safe,blockPass:cfg.blockPass,bonus:cfg.bonus,captureHome:cfg.captureHome,jail:cfg.jail!==false,homeBonus:cfg.homeBonus!==false,timer:cfg.timer||30,stake:stake,auto:!!cfg.autoStart},
+    cfg:{count:cfg.count,twoDice:cfg.twoDice,safe:cfg.safe,blockPass:cfg.blockPass,bonus:cfg.bonus,captureHome:false,jail:cfg.jail!==false,homeBonus:cfg.homeBonus!==false,timer:cfg.timer||30,stake:stake,auto:!!cfg.autoStart},
     seats:{0:{id:myId,name:meName(),av:meAv(),fc:myFc}}};
   onErr="";saveCfg();publishMe();
   api("GET","",undefined,code).then(function(x){if(x)throw new Error("taken");return api("PUT","",room,code)})
@@ -1519,7 +1519,7 @@ function renderSetup(){
   h+='<div class="stakes"><h3>'+t.stake+'</h3><div id="stake-box">'+stakeHTML()+'</div><p class="note">'+t.stakeNote+'</p></div>';
   h+='<div><h3>'+t.timer+'</h3>'+seg([[0,t.off],[10,t.sec(10)],[15,t.sec(15)],[30,t.sec(30)]],cfg.timer,"timer")+'</div>';
   h+='<div><h3>'+t.ruleset+'</h3>'+seg([["1",t.p1],["2",t.p2]],cfg.twoDice?"2":"1","preset")+'</div><div>';
-  [["safe",t.oSafe],["blockPass",t.oBlock],["bonus",t.oBonus],["captureHome",t.oHome],["jail",t.oJail],["homeBonus",t.oHomeBonus]].forEach(function(o){
+  [["safe",t.oSafe],["blockPass",t.oBlock],["bonus",t.oBonus],["jail",t.oJail],["homeBonus",t.oHomeBonus]].forEach(function(o){
     h+='<label class="check" for="opt-'+o[0]+'"><input type="checkbox" id="opt-'+o[0]+'" data-opt="'+o[0]+'"'+(cfg[o[0]]?" checked":"")+'>'+o[1]+'</label>';
   });
   h+='</div><p class="err" id="setup-err" role="alert"></p><button type="button" class="cta" id="go">'+t.start+'</button><button type="button" class="ghost" id="cancel">'+t.close+'</button>';
@@ -1529,7 +1529,7 @@ function renderSetup(){
     var k=b.getAttribute("data-set"),v=b.getAttribute("data-val");
     if(k==="count")cfg.count=parseInt(v,10);
     else if(k==="timer")cfg.timer=parseInt(v,10);
-    else if(k==="preset"){cfg.twoDice=v==="2";cfg.bonus=!cfg.twoDice;cfg.captureHome=cfg.twoDice}
+    else if(k==="preset"){cfg.twoDice=v==="2";cfg.bonus=!cfg.twoDice;cfg.captureHome=false}
     else cfg.kinds[parseInt(k.slice(4),10)]=v;
     renderSetup();
   })});
@@ -1626,6 +1626,7 @@ function boot(data){
   try{var c=localStorage.getItem("ludo-cfg2");if(c){var cj=JSON.parse(c);if(cj&&cj.kinds&&cj.names&&cj.avs)cfg=cj}}catch(e){}
   if(typeof cfg.timer!=="number")cfg.timer=15;
   if(typeof cfg.jail!=="boolean")cfg.jail=true;
+  cfg.captureHome=false;
   if(typeof cfg.homeBonus!=="boolean")cfg.homeBonus=true;
   if(renamePlayer("Ndeye","Yama"))saveLocal();
   var saved=null;
