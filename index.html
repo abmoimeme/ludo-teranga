@@ -104,6 +104,18 @@ h1 span{color:var(--accent)}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 #btn-new,#btn-online{flex:1 1 40%}
 #btn-online{background:var(--ink);color:var(--cloth);border-color:var(--ink)}
+.invite{position:fixed;top:max(10px,env(safe-area-inset-top));left:12px;right:12px;max-width:516px;margin:0 auto;z-index:40;display:none;align-items:center;gap:8px;background:var(--ink);color:var(--cloth);border-radius:14px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.5);font-weight:700}
+.invite.open{display:flex}
+.invite span{flex:1;min-width:0}
+.invite button{flex:none;border:0;border-radius:10px;min-height:42px;padding:0 14px;font-weight:800;background:var(--accent);color:#1a1500}
+.invite button.q{background:none;color:var(--cloth);border:1.5px solid var(--cloth)}
+.mini{flex:none;background:none;border:1.5px solid var(--muted);border-radius:9px;padding:6px 10px;font-size:.8rem;font-weight:700;min-height:36px}
+.mini:disabled{opacity:.5}
+.mini.q{border-color:transparent;color:var(--muted)}
+.fc{font-family:var(--display);color:var(--accent);letter-spacing:.08em;font-size:1.05rem;-webkit-user-select:all;user-select:all}
+.places .av{width:28px;height:28px;border-radius:8px;background:var(--cloth);display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem;flex:none;overflow:hidden}
+.places .av img{width:100%;height:100%;object-fit:cover}
+#fc-add{text-transform:uppercase;letter-spacing:.1em}
 .code{text-align:center;background:rgba(0,0,0,.25);border-radius:14px;padding:10px}
 .code small{display:block;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
 .code b{font-family:var(--display);font-size:2.2rem;letter-spacing:.14em;color:var(--accent);line-height:1.1;-webkit-user-select:all;user-select:all}
@@ -216,6 +228,7 @@ h1 span{color:var(--accent)}
   <p class="foot">&copy; 2026 Nioro Resources LLC</p>
 </div>
 
+<div class="invite" id="invite-bar" role="status"></div>
 <div class="sheet" id="sheet-setup"><div class="panel" id="panel-setup"></div></div>
 <div class="sheet" id="sheet-rules"><div class="panel" id="panel-rules"></div></div>
 <div class="sheet" id="sheet-online"><div class="panel" id="panel-online"></div></div>
@@ -354,6 +367,10 @@ en:{sub:"West African house rules",roll:"Roll",newGame:"New game",rules:"Rules",
   create:"Start a private game",createNote:"Uses the rules, timer and points entry from New game.",createBtn:"Create game",
   lobby:"Private game",codeIs:"Game code",invite:"Invite players",inviteText:function(c){return "Join my Ludo Teranga game. Code: "+c},copied:"Invite copied.",
   waitingSeat:"Waiting for a player…",hostTag:"host",youTag:"you",emptyNote:"Seats still empty when you start are played by the computer.",
+  friends:"Friends",yourCode:"Your friend code:",share:"Share",addFriend:"Add",fcPh:"Friend code",remove:"Remove",addF:"+ Friend",
+  noFriends:"No friends yet. Share your code, type a friend's code here, or tap + Friend next to someone you play with.",
+  inviteFriends:"Invite a friend",inviteBtn:"Invite",invitedOk:"Invited",invFrom:function(n){return n+" invites you to a game"},notNow:"Not now",
+  errFc:"No player found with this friend code.",errSelf:"That is your own code.",shareFc:function(c){return "Add me on Ludo Teranga. My friend code: "+c},
   startMode:"When the game starts",startManual:"When I tap Start",startAuto:"By itself when full",startEarly:"Start now with the players here",
   autoNoteHost:"The game starts by itself once every seat is taken. You can also start sooner, and empty seats go to the computer.",
   autoNoteGuest:"The game starts once every seat is taken, or sooner if the host starts it.",startingNow:"Everyone is here. Starting…",
@@ -402,6 +419,10 @@ fr:{sub:"Règles de la maison, façon Afrique de l'Ouest",roll:"Lancer",newGame:
   create:"Lancer une partie privée",createNote:"Reprend les règles, le temps et la mise de Nouvelle partie.",createBtn:"Créer la partie",
   lobby:"Partie privée",codeIs:"Code de la partie",invite:"Inviter des joueurs",inviteText:function(c){return "Rejoins ma partie de Ludo Teranga. Code : "+c},copied:"Invitation copiée.",
   waitingSeat:"En attente d'un joueur…",hostTag:"hôte",youTag:"vous",emptyNote:"Les sièges encore vides au départ sont joués par l'ordinateur.",
+  friends:"Amis",yourCode:"Votre code ami :",share:"Partager",addFriend:"Ajouter",fcPh:"Code ami",remove:"Retirer",addF:"+ Ami",
+  noFriends:"Pas encore d'amis. Partagez votre code, tapez le code d'un ami ici, ou touchez + Ami à côté d'un joueur.",
+  inviteFriends:"Inviter un ami",inviteBtn:"Inviter",invitedOk:"Invité",invFrom:function(n){return n+" vous invite à une partie"},notNow:"Plus tard",
+  errFc:"Aucun joueur trouvé avec ce code ami.",errSelf:"C'est votre propre code.",shareFc:function(c){return "Ajoute-moi sur Ludo Teranga. Mon code ami : "+c},
   startMode:"Début de la partie",startManual:"Quand je touche Commencer",startAuto:"Tout seul quand c'est complet",startEarly:"Commencer avec les joueurs présents",
   autoNoteHost:"La partie démarre toute seule quand tous les sièges sont pris. Vous pouvez aussi commencer avant ; les sièges vides vont à l'ordinateur.",
   autoNoteGuest:"La partie démarre quand tous les sièges sont pris, ou avant si l'hôte la lance.",startingNow:"Tout le monde est là. C'est parti…",
@@ -1032,15 +1053,15 @@ function createRoom(){
   var code=newCode(),stake=(cfg.stake||0)>balanceOf(meName())?0:(cfg.stake||0);
   var room={v:1,host:myId,created:Date.now(),status:"lobby",round:0,
     cfg:{count:cfg.count,twoDice:cfg.twoDice,safe:cfg.safe,blockPass:cfg.blockPass,bonus:cfg.bonus,captureHome:cfg.captureHome,jail:cfg.jail!==false,homeBonus:cfg.homeBonus!==false,timer:cfg.timer||30,stake:stake,auto:!!cfg.autoStart},
-    seats:{0:{id:myId,name:meName(),av:meAv()}}};
-  onErr="";saveCfg();
+    seats:{0:{id:myId,name:meName(),av:meAv(),fc:myFc}}};
+  onErr="";saveCfg();publishMe();
   api("GET","",undefined,code).then(function(x){if(x)throw new Error("taken");return api("PUT","",room,code)})
     .then(function(){joinTries=0;enter(code,room);renderOnline()})
     .catch(function(){onErr=L().errNet;renderOnline()});
 }
 function joinRoom(code){
   code=String(code||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
-  onErr="";saveCfg();
+  onErr="";saveCfg();publishMe();
   if(code.length!==6){onErr=L().errNoRoom;renderOnline();return}
   api("GET","",undefined,code).then(function(r){
     if(!r||!r.cfg){try{localStorage.removeItem("ludo-room")}catch(e){}onErr=L().errNoRoom;renderOnline();return}
@@ -1050,7 +1071,7 @@ function joinRoom(code){
     if(r.status!=="lobby"){onErr=L().errStarted;renderOnline();return}
     if(free<0){onErr=L().errFull;renderOnline();return}
     if((r.cfg.stake||0)>balanceOf(meName())){onErr=L().errPoints(fmt(r.cfg.stake));renderOnline();return}
-    var seat={id:myId,name:meName(),av:meAv()};
+    var seat={id:myId,name:meName(),av:meAv(),fc:myFc};
     return api("PUT","/seats/"+free,seat,code).then(function(){
       if(!r.seats)r.seats={};r.seats[free]=seat;pendingCode="";enter(code,r);onRoom();
     });
@@ -1103,6 +1124,7 @@ function renderOnline(){
     h+='<div><h3>'+t.yourName+'</h3><div class="who"><input type="text" id="me-name" maxlength="12" autocomplete="off" placeholder="'+esc(meName())+'" value="'+esc((cfg.me&&cfg.me.name)||"")+'" aria-label="'+t.yourName+'"><span class="bal" id="me-bal">★ '+fmt(balanceOf(meName()))+'</span></div><div class="avs" id="avs-me" style="margin-top:8px"></div></div>';
     h+='<div><h3>'+t.joinTitle+'</h3><div class="who"><input type="text" id="join-code" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="'+t.codePh+'" value="'+esc(pendingCode)+'" aria-label="'+t.codePh+'"><button type="button" class="cta" id="join-go" style="padding:0 22px">'+t.join+'</button></div></div>';
     h+='<div><h3>'+t.create+'</h3>'+seg([[2,"2"],[3,"3"],[4,"4"]],cfg.count,"ocount")+'<h3 style="margin-top:12px">'+t.startMode+'</h3>'+seg([["0",t.startManual],["1",t.startAuto]],cfg.autoStart?"1":"0","oauto")+'<p class="note">'+t.createNote+'</p><button type="button" class="cta" id="create-go" style="width:100%;margin-top:10px">'+t.createBtn+'</button></div>';
+    h+=friendsHTML();
     h+=err+'<button type="button" class="ghost" id="on-close">'+t.close+'</button>';
   }else{
     var r=net.room,c=r.cfg||{},host=r.host===myId,bs=seatsFor(c.count||4);
@@ -1113,9 +1135,11 @@ function renderOnline(){
       var s=seatAt(r,i),tags=[];
       if(s&&s.id===r.host)tags.push(t.hostTag);
       if(s&&s.id===myId)tags.push(t.youTag);
-      h+='<li><em>'+(i+1)+'</em><i style="background:'+CSSC[bs[i]]+'"></i><b'+(s?"":' style="color:var(--muted);font-weight:400"')+'>'+(s?esc(String(s.name||"").slice(0,12)):t.waitingSeat)+'</b><span>'+tags.join(" · ")+'</span></li>';
+      var addf=s&&s.id!==myId&&/^[A-Z0-9]{8}$/.test(s.fc||"")&&!isFriend(s.fc)?'<button type="button" class="mini" data-addf="'+i+'">'+t.addF+'</button>':"";
+      h+='<li><em>'+(i+1)+'</em><i style="background:'+CSSC[bs[i]]+'"></i><b'+(s?"":' style="color:var(--muted);font-weight:400"')+'>'+(s?esc(String(s.name||"").slice(0,12)):t.waitingSeat)+'</b><span>'+tags.join(" · ")+'</span>'+addf+'</li>';
     }
     h+='</ol>';
+    if(r.status==="lobby")h+=inviteListHTML(r);
     if(r.status==="lobby"){
       var full=lobbyFull(r);
       h+='<p class="note" style="margin:0">'+(full&&c.auto?t.startingNow:host?(c.auto?t.autoNoteHost:t.emptyNote):(c.auto?t.autoNoteGuest:t.waitHost))+'</p>';
@@ -1132,6 +1156,7 @@ function renderOnline(){
   on("invite-go",invite);
   on("start-go",startOnline);
   on("leave-go",function(){closeSheets();leaveRoom()});
+  bindFriends(p);
   Array.prototype.slice.call(p.querySelectorAll('[data-set="oauto"]')).forEach(function(b){b.addEventListener("click",function(){
     cfg.autoStart=b.getAttribute("data-val")==="1";
     Array.prototype.slice.call(p.querySelectorAll('[data-set="oauto"]')).forEach(function(x){x.setAttribute("aria-pressed",x===b)});
@@ -1146,6 +1171,127 @@ function renderOnline(){
     nm.addEventListener("change",function(){var pr=profileOf(meName());if(pr&&pr.av&&cfg.me){cfg.me.av=null;refreshMyAvs()}});
     refreshMyAvs();
   }
+}
+
+// ---------- Friends and invitations ----------
+// Each player has a friend code to share. An invitation is a small note left in the friend's inbox;
+// their app shows it while it is open.
+var myFc="",friends=[],inboxEs=null,invites={},invited={},shownInvite="",pendingFriend="";
+try{myFc=localStorage.getItem("ludo-fc")||"";friends=JSON.parse(localStorage.getItem("ludo-friends")||"[]")||[]}catch(e){}
+if(!Array.isArray(friends))friends=[];
+if(!/^[A-Z0-9]{8}$/.test(myFc)){myFc=newCode()+newCode().slice(0,2);try{localStorage.setItem("ludo-fc",myFc)}catch(e){}}
+try{pendingFriend=(new URLSearchParams(location.search).get("friend")||"")}catch(e){}
+function fcShow(c){return c.slice(0,4)+"-"+c.slice(4)}
+function fcClean(c){return String(c||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)}
+function saveFriends(){try{localStorage.setItem("ludo-friends",JSON.stringify(friends))}catch(e){}}
+function dbx(method,path,body){
+  return fetch(DB+path+".json",{method:method,headers:{"Content-Type":"application/json"},body:body===undefined?undefined:JSON.stringify(body)})
+    .then(function(r){if(!r.ok)throw new Error("net");return r.json()});
+}
+function publishMe(){if(DB)dbx("PUT","/players/"+myFc,{name:meName(),av:meAv(),t:Date.now()}).catch(function(){})}
+function isFriend(fc){return friends.some(function(f){return f.fc===fc})}
+function addFriend(fc,name,av){
+  fc=fcClean(fc);
+  if(fc.length!==8||fc===myFc||isFriend(fc))return false;
+  friends.push({fc:fc,name:String(name||"").slice(0,12)||fcShow(fc),av:cleanAv(av,0)});
+  if(friends.length>40)friends.shift();
+  saveFriends();return true;
+}
+function addFriendByCode(raw){
+  var fc=fcClean(raw);onErr="";
+  if(fc.length!==8){onErr=L().errFc;renderOnline();return}
+  if(fc===myFc){onErr=L().errSelf;renderOnline();return}
+  if(isFriend(fc)){renderOnline();return}
+  dbx("GET","/players/"+fc).then(function(p){if(!p||!p.name)onErr=L().errFc;else addFriend(fc,p.name,p.av);renderOnline()})
+    .catch(function(){onErr=L().errNet;renderOnline()});
+}
+function removeFriend(fc){friends=friends.filter(function(f){return f.fc!==fc});saveFriends();renderOnline()}
+function sendInvite(fc){
+  if(!net)return;
+  invited[fc]=net.code;onErr="";
+  dbx("PUT","/inbox/"+fc+"/"+myFc,{from:meName(),code:net.code,t:Date.now()}).catch(function(){delete invited[fc];onErr=L().errNet;renderOnline()});
+  renderOnline();
+}
+function shareMyCode(){
+  var url=location.origin+location.pathname+"?friend="+myFc,txt=L().shareFc(fcShow(myFc)),note=$("fc-note");
+  function show(m){if(note)note.textContent=m}
+  if(navigator.share){navigator.share({title:"Ludo Teranga",text:txt,url:url}).catch(function(){});return}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt+" "+url).then(function(){show(L().copied)},function(){show(url)});return}
+  show(url);
+}
+function openInbox(){
+  if(!DB||inboxEs||!window.EventSource)return;
+  var box={};
+  try{inboxEs=new EventSource(DB+"/inbox/"+myFc+".json")}catch(e){return}
+  function upd(){
+    invites={};
+    Object.keys(box||{}).forEach(function(k){
+      var v=box[k];
+      if(v&&typeof v.code==="string"&&/^[A-Z0-9]{6}$/.test(v.code)&&Math.abs(Date.now()-(v.t||0))<20*60000&&!(net&&net.code===v.code))invites[k]=v;
+    });
+    renderInvite();
+  }
+  inboxEs.addEventListener("put",function(m){
+    var d=JSON.parse(m.data),ps=String(d.path).split("/").filter(Boolean);
+    if(!ps.length)box=d.data||{};
+    else if(ps.length===1){if(d.data===null)delete box[ps[0]];else box[ps[0]]=d.data}
+    else{box[ps[0]]=box[ps[0]]||{};box[ps[0]][ps[1]]=d.data}
+    upd();
+  });
+  inboxEs.addEventListener("patch",function(m){
+    var d=JSON.parse(m.data),ps=String(d.path).split("/").filter(Boolean);
+    if(!ps.length)Object.keys(d.data||{}).forEach(function(k){box[k]=d.data[k]});
+    upd();
+  });
+}
+function clearInvite(k){delete invites[k];dbx("PUT","/inbox/"+myFc+"/"+k,null).catch(function(){});renderInvite()}
+function acceptInvite(code){
+  if(net)leaveRoom();
+  closeSheets();joinTries=0;pendingCode=code;onErr="";
+  var hs=humanSeats(),named=((cfg.me&&cfg.me.name)||"").trim()||(hs.length&&(cfg.names[hs[0]]||"").trim());
+  openOnline();
+  if(named)joinRoom(code);
+}
+function renderInvite(){
+  var bar=$("invite-bar"),ks=Object.keys(invites);
+  if(!ks.length){bar.className="invite";bar.innerHTML="";shownInvite="";return}
+  var k=ks[0],v=invites[k];
+  if(shownInvite!==k+v.code){shownInvite=k+v.code;sfx("home")}
+  bar.className="invite open";
+  bar.innerHTML='<span>'+esc(L().invFrom(String(v.from||"").slice(0,12)))+'</span><button type="button" id="inv-yes">'+L().join+'</button><button type="button" id="inv-no" class="q">'+L().notNow+'</button>';
+  $("inv-yes").addEventListener("click",function(){clearInvite(k);acceptInvite(v.code)});
+  $("inv-no").addEventListener("click",function(){clearInvite(k)});
+}
+function avHTML(av){av=cleanAv(av,0);return '<span class="av">'+(av.t==="i"?'<img alt="" src="'+esc(av.v)+'">':esc(av.v))+'</span>'}
+function friendsHTML(){
+  var t=L(),h='<div><h3>'+t.friends+'</h3><p class="note" style="margin:0 0 8px">'+t.yourCode+' <b class="fc">'+fcShow(myFc)+'</b> <button type="button" class="mini" id="fc-share">'+t.share+'</button> <span id="fc-note"></span></p>';
+  h+='<div class="who"><input type="text" id="fc-add" maxlength="9" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX" aria-label="'+t.fcPh+'"><button type="button" class="cta" id="fc-go" style="padding:0 22px">'+t.addFriend+'</button></div>';
+  if(!friends.length)h+='<p class="note">'+t.noFriends+'</p>';
+  else h+='<ol class="places" style="margin-top:8px">'+friends.map(function(f){
+    return '<li>'+avHTML(f.av)+'<b>'+esc(f.name)+'</b><button type="button" class="mini q" data-rmf="'+f.fc+'" aria-label="'+t.remove+' '+esc(f.name)+'">'+t.remove+'</button></li>';
+  }).join("")+'</ol>';
+  return h+'</div>';
+}
+function inviteListHTML(r){
+  var t=L(),taken={};
+  for(var i=0;i<4;i++){var s=seatAt(r,i);if(s&&s.fc)taken[s.fc]=1}
+  var list=friends.filter(function(f){return !taken[f.fc]});
+  if(!list.length)return "";
+  return '<div><h3>'+t.inviteFriends+'</h3><ol class="places">'+list.map(function(f){
+    var done=invited[f.fc]===net.code;
+    return '<li>'+avHTML(f.av)+'<b>'+esc(f.name)+'</b><button type="button" class="mini" data-inv="'+f.fc+'"'+(done?" disabled":"")+'>'+(done?t.invitedOk:t.inviteBtn)+'</button></li>';
+  }).join("")+'</ol></div>';
+}
+function bindFriends(p){
+  var all=function(q){return Array.prototype.slice.call(p.querySelectorAll(q))};
+  if($("fc-share"))$("fc-share").addEventListener("click",shareMyCode);
+  if($("fc-go"))$("fc-go").addEventListener("click",function(){addFriendByCode($("fc-add").value)});
+  all("[data-rmf]").forEach(function(b){b.addEventListener("click",function(){removeFriend(b.getAttribute("data-rmf"))})});
+  all("[data-inv]").forEach(function(b){b.addEventListener("click",function(){sendInvite(b.getAttribute("data-inv"))})});
+  all("[data-addf]").forEach(function(b){b.addEventListener("click",function(){
+    var i=parseInt(b.getAttribute("data-addf"),10),s=net&&seatAt(net.room,i);
+    if(s&&s.fc){addFriend(s.fc,s.name,s.av);renderOnline()}
+  })});
 }
 
 // ---------- Sheets ----------
@@ -1301,7 +1447,7 @@ function setLang(l){
 $("roll").addEventListener("click",function(){if(isHuman(g.turn))doRoll()});
 $("btn-new").addEventListener("click",function(){renderSetup();$("sheet-setup").classList.add("open")});
 $("btn-scores").addEventListener("click",openScores);
-$("btn-online").addEventListener("click",function(){onErr="";openOnline()});
+$("btn-online").addEventListener("click",function(){onErr="";publishMe();openOnline()});
 $("btn-sound").addEventListener("click",function(){
   soundOn=!soundOn;try{localStorage.setItem("ludo-sound",soundOn?"1":"0")}catch(e){}
   renderAll();
@@ -1342,6 +1488,10 @@ function boot(data){
   try{savedRoom=localStorage.getItem("ludo-room")||""}catch(e){}
   if(DB&&pendingCode){closeSheets();if(savedRoom===pendingCode)joinRoom(pendingCode);else openOnline()}
   else if(DB&&savedRoom)joinRoom(savedRoom);
+  if(DB){
+    openInbox();publishMe();
+    if(fcClean(pendingFriend).length===8&&!pendingCode){closeSheets();openOnline();addFriendByCode(pendingFriend)}
+  }
 }
 boot({});
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
