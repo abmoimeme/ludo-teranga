@@ -116,6 +116,19 @@ h1 span{color:var(--accent)}
 .places .av{width:28px;height:28px;border-radius:8px;background:var(--cloth);display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem;flex:none;overflow:hidden}
 .places .av img{width:100%;height:100%;object-fit:cover}
 #fc-add{text-transform:uppercase;letter-spacing:.1em}
+.react{display:flex;align-items:center;gap:6px;margin:-2px 0}
+.react[hidden]{display:none}
+.react button{flex:none;min-width:42px;height:42px;border-radius:12px;border:1.5px solid transparent;background:var(--cloth-2);font-size:1.25rem;padding:0 6px}
+.react .to{flex:1;min-width:0;font-size:.82rem;font-weight:700;border-color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;padding:0 10px}
+.react .to.aim{border-color:var(--accent);color:var(--accent)}
+.bubble{position:absolute;z-index:8;max-width:46%;background:#fff;color:#161c3d;border-radius:12px;padding:6px 9px;font-size:.84rem;font-weight:700;line-height:1.2;box-shadow:0 4px 12px rgba(0,0,0,.45);pointer-events:none;animation:pop .18s ease-out;overflow-wrap:anywhere}
+.bubble small{display:block;font-size:.64rem;font-weight:700;color:#6a6f8c;white-space:nowrap}
+.bubble.big{font-size:1.9rem;line-height:1.15}
+.bubble.big small{font-size:.64rem;line-height:1.2}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.phrases{display:flex;flex-wrap:wrap;gap:6px}
+.phrases button{background:var(--cloth);border:1.5px solid var(--muted);border-radius:999px;padding:8px 12px;font-weight:600;font-size:.88rem;min-height:40px}
+@media (prefers-reduced-motion:reduce){.bubble{animation:none}}
 .code{text-align:center;background:rgba(0,0,0,.25);border-radius:14px;padding:10px}
 .code small{display:block;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
 .code b{font-family:var(--display);font-size:2.2rem;letter-spacing:.14em;color:var(--accent);line-height:1.1;-webkit-user-select:all;user-select:all}
@@ -211,6 +224,8 @@ h1 span{color:var(--accent)}
 
   <div class="board" id="board"><svg id="svg" viewBox="0 0 15 15" aria-hidden="true"></svg></div>
 
+  <div class="react" id="react" hidden></div>
+
   <div class="tray">
     <div class="dice" id="dice"></div>
     <div class="status" id="status" aria-live="polite"></div>
@@ -233,6 +248,7 @@ h1 span{color:var(--accent)}
 <div class="sheet" id="sheet-setup"><div class="panel" id="panel-setup"></div></div>
 <div class="sheet" id="sheet-rules"><div class="panel" id="panel-rules"></div></div>
 <div class="sheet" id="sheet-online"><div class="panel" id="panel-online"></div></div>
+<div class="sheet" id="sheet-chat"><div class="panel" id="panel-chat"></div></div>
 <div class="sheet" id="sheet-scores"><div class="panel" id="panel-scores"></div></div>
 <div class="sheet win" id="sheet-win"><div class="panel" id="panel-win"></div></div>
 
@@ -368,6 +384,8 @@ en:{sub:"West African house rules",roll:"Roll",newGame:"New game",rules:"Rules",
   create:"Start a private game",createNote:"Uses the rules, timer and points entry from New game.",createBtn:"Create game",
   lobby:"Private game",codeIs:"Game code",invite:"Invite players",inviteText:function(c){return "Join my Ludo Teranga game. Code: "+c},copied:"Invite copied.",
   waitingSeat:"Waiting for a player…",hostTag:"host",youTag:"you",emptyNote:"Seats still empty when you start are played by the computer.",
+  toAll:"→ All",toOne:function(n){return "→ "+n},you:"you",everyone:"Everyone",chatTitle:"Say something",chatTo:"Who sees it",chatPh:"Short message",send:"Send",
+  phrases:["Got you!","Nice move!","Hurry up!","Good game!","Wait for me!","Thank you!","Bad luck!","I'm coming for you!"],
   friends:"Friends",yourCode:"Your friend code:",share:"Share",addFriend:"Add",fcPh:"Friend code",remove:"Remove",addF:"+ Friend",
   noFriends:"No friends yet. Share your code, type a friend's code here, or tap + Friend next to someone you play with.",
   inviteFriends:"Invite a friend",inviteBtn:"Invite",invitedOk:"Invited",invFrom:function(n){return n+" invites you to a game"},notNow:"Not now",
@@ -422,6 +440,8 @@ fr:{sub:"Règles de la maison, façon Afrique de l'Ouest",roll:"Lancer",newGame:
   create:"Lancer une partie privée",createNote:"Reprend les règles, le temps et la mise de Nouvelle partie.",createBtn:"Créer la partie",
   lobby:"Partie privée",codeIs:"Code de la partie",invite:"Inviter des joueurs",inviteText:function(c){return "Rejoins ma partie de Ludo Teranga. Code : "+c},copied:"Invitation copiée.",
   waitingSeat:"En attente d'un joueur…",hostTag:"hôte",youTag:"vous",emptyNote:"Les sièges encore vides au départ sont joués par l'ordinateur.",
+  toAll:"→ Tous",toOne:function(n){return "→ "+n},you:"vous",everyone:"Tout le monde",chatTitle:"Dire quelque chose",chatTo:"Qui le voit",chatPh:"Message court",send:"Envoyer",
+  phrases:["Je t'ai eu !","Beau coup !","Dépêche-toi !","Belle partie !","Attends-moi !","Merci !","Pas de chance !","J'arrive pour toi !"],
   friends:"Amis",yourCode:"Votre code ami :",share:"Partager",addFriend:"Ajouter",fcPh:"Code ami",remove:"Retirer",addF:"+ Ami",
   noFriends:"Pas encore d'amis. Partagez votre code, tapez le code d'un ami ici, ou touchez + Ami à côté d'un joueur.",
   inviteFriends:"Inviter un ami",inviteBtn:"Inviter",invitedOk:"Invité",invFrom:function(n){return n+" vous invite à une partie"},notNow:"Plus tard",
@@ -605,6 +625,7 @@ function sfx(name){
     else if(name==="home"){[523,659,784].forEach(function(f,i){tone(f,i*0.09,0.18,"triangle",0.2)})}
     else if(name==="win"){[523,659,784,1047,784,1047].forEach(function(f,i){tone(f,i*0.13,i===5?0.5:0.16,"triangle",0.22)})}
     else if(name==="tick")tone(1100,0,0.04,"square",0.06);
+    else if(name==="pop")tone(700,0,0.08,"sine",0.2,1150);
     else if(name==="timeup")tone(300,0,0.4,"sawtooth",0.14,120);
     else if(name==="nomove")tone(220,0,0.15,"sine",0.15,180);
   }catch(e){}
@@ -832,7 +853,7 @@ function renderTokens(){
 }
 function say(t){$("status").textContent=t}
 function renderAll(){
-  renderChips();renderDice();renderTokens();
+  renderChips();renderDice();renderTokens();renderReact();
   $("roll").disabled=!(phase==="roll"&&isHuman(g.turn));
   $("roll").textContent=L().roll;$("btn-new").textContent=L().newGame;$("btn-rules").textContent=L().rules;$("btn-online").textContent=L().online;$("btn-scores").textContent=L().scores;$("btn-sound").textContent=soundOn?L().soundOn:L().soundOff;$("btn-sound").setAttribute("aria-pressed",soundOn);$("sub").textContent=L().sub;
   $("lang-en").setAttribute("aria-pressed",lang==="en");$("lang-fr").setAttribute("aria-pressed",lang==="fr");
@@ -908,6 +929,11 @@ async function doMove(ti,di,remote){
   g.dice.splice(di,1);selDie=0;
   var gain=award(pi,PTS_CAP*caps)+(home?award(pi,PTS_HOME):0);
   stat(pi,"caps",caps);
+  if(caps&&live()&&isHuman(pi)){
+    // after a catch, the next reaction is aimed at the player who was caught
+    var hit=res.captured[0].pi;
+    if(g.players[hit].kind==="human"&&g.players[hit].id!==myId){aim=hit;clearTimeout(aimT);aimT=setTimeout(function(){aim=-1;renderReact()},15000);renderReact()}
+  }
   if(placed){g.gains[pi]=award(pi,potShare(rankNo,g.players.length,g.pot)+BONUS[rankNo-1]);gain+=g.gains[pi]}
   if(g.over){recordGame();try{localStorage.removeItem("ludo-game3")}catch(x){}}
   renderTokens();renderDice();
@@ -1030,7 +1056,7 @@ function resync(force){
   if(!net)return;var n=net;
   api("GET","").then(function(r){
     if(net!==n||!r)return;
-    net.room=r;net.evVer++;net.ok=0;net.maxKey="";net.lastMsg=Date.now();
+    net.room=r;net.evVer++;net.ok=0;net.maxKey="";net.lastMsg=Date.now();markChatSeen();
     if(r.status!=="lobby"&&r.game&&(force||!net.live||net.round!==r.round))rebuildRound();else onRoom();
   }).catch(function(){});
 }
@@ -1096,7 +1122,7 @@ function openStream(){
   if(net.es){try{net.es.close()}catch(e){}}
   var es=net.es=new EventSource(roomUrl(net.code));
   net.lastMsg=Date.now();
-  es.addEventListener("put",function(m){if(!net||net.es!==es)return;net.lastMsg=Date.now();var d=JSON.parse(m.data);setPath(d.path,d.data);onRoom()});
+  es.addEventListener("put",function(m){if(!net||net.es!==es)return;net.lastMsg=Date.now();var d=JSON.parse(m.data);setPath(d.path,d.data);noteChat(d.path,d.data);onRoom()});
   es.addEventListener("patch",function(m){
     if(!net||net.es!==es)return;
     net.lastMsg=Date.now();
@@ -1136,7 +1162,8 @@ function autoStartCheck(r){
   net.autoT=setTimeout(function(){if(net===n&&net.room.status==="lobby"&&net.room.cfg.auto&&lobbyFull(net.room))startOnline()},host?2500:9000);
 }
 function enter(code,room){
-  net={code:code,room:room,es:null,applied:0,ok:0,log:[],round:0,live:false,seen:{},hbv:{},since:Date.now(),beat:null,evVer:1,seqVer:0,seq:null,lastMsg:Date.now()};
+  net={code:code,room:room,es:null,applied:0,ok:0,log:[],round:0,live:false,seen:{},hbv:{},since:Date.now(),beat:null,evVer:1,seqVer:0,seq:null,lastMsg:Date.now(),chatSeen:{}};
+  markChatSeen();
   try{localStorage.setItem("ludo-room",code)}catch(e){}
   openStream();
   api("PUT","/hb/"+myId,Date.now()).catch(function(){});
@@ -1451,6 +1478,88 @@ function bindFriends(p){
   })});
 }
 
+// ---------- Reactions and short comments during an online game ----------
+// A message goes to everyone, or to one player only. A message for one player is shown on that
+// player's phone and the sender's, and nowhere else.
+var aim=-1,aimT=null,lastSentAt=0,REACT=["😂","👏","😮","🔥","👋"];
+function myPi(){if(!g)return -1;for(var i=0;i<g.players.length;i++)if(g.players[i].id===myId)return i;return -1}
+function others(){var me=myPi(),r=[];g.players.forEach(function(p,i){if(i!==me&&p.kind==="human")r.push(i)});return r}
+function renderReact(){
+  var bar=$("react");
+  if(!live()||myPi()<0||!others().length){bar.hidden=true;return}
+  bar.hidden=false;
+  if(aim>=0&&others().indexOf(aim)<0)aim=-1;
+  var t=L(),h='<button type="button" class="to'+(aim>=0?" aim":"")+'" id="react-to">'+esc(aim>=0?t.toOne(g.players[aim].name):t.toAll)+'</button>';
+  REACT.forEach(function(e){h+='<button type="button" data-react="'+e+'" aria-label="'+e+'">'+e+'</button>'});
+  h+='<button type="button" id="react-more" aria-label="'+t.chatTitle+'">💬</button>';
+  bar.innerHTML=h;
+  $("react-to").addEventListener("click",cycleAim);
+  $("react-more").addEventListener("click",openChat);
+  Array.prototype.slice.call(bar.querySelectorAll("[data-react]")).forEach(function(b){b.addEventListener("click",function(){sendChat(b.getAttribute("data-react"))})});
+}
+function cycleAim(){
+  var o=others(),i=o.indexOf(aim);
+  aim=i<0?(o.length?o[0]:-1):(i+1<o.length?o[i+1]:-1);
+  clearTimeout(aimT);renderReact();
+}
+function sendChat(m){
+  m=String(m||"").trim().slice(0,40);
+  var me=myPi();
+  if(!m||!live()||me<0||Date.now()-lastSentAt<1200)return false;
+  lastSentAt=Date.now();
+  var v={from:me,to:aim,m:m,t:lastSentAt};
+  bubble(v);
+  api("POST","/chat",v).then(function(res){if(net&&res&&res.name)net.chatSeen[res.name]=1}).catch(function(){});
+  return true;
+}
+function noteChat(path,val){
+  var ps=String(path).split("/").filter(Boolean);
+  if(ps[0]==="chat"&&ps.length===2){if(val)showChat(ps[1],val)}
+  else if(!ps.length||(ps[0]==="chat"&&ps.length===1))markChatSeen();
+}
+function markChatSeen(){var c=(net&&net.room&&net.room.chat)||{};Object.keys(c).forEach(function(k){net.chatSeen[k]=1})}
+function showChat(key,v){
+  if(!net||net.chatSeen[key])return;
+  net.chatSeen[key]=1;
+  if(!live()||!v||typeof v.m!=="string"||typeof v.from!=="number")return;
+  var me=myPi();
+  if(!(v.from>=0&&v.from<g.players.length))return;
+  if(v.from===me&&v.t===lastSentAt)return;
+  if(v.to!==-1&&v.to!==me&&v.from!==me)return;
+  bubble(v);sfx("pop");
+}
+function bubble(v){
+  var pl=g.players[v.from],me=myPi(),b=document.createElement("div"),m=String(v.m).slice(0,40),old=$("bub-"+v.from);
+  if(old)old.remove();
+  b.className="bubble"+(m.length<=4&&!/[A-Za-z0-9]/.test(m)?" big":"");b.id="bub-"+v.from;
+  b.style[pl.seat<2?"top":"bottom"]="2%";b.style[(pl.seat===0||pl.seat===3)?"left":"right"]="2%";
+  var who=document.createElement("small");
+  who.textContent=pl.name+(v.to>=0&&g.players[v.to]?" → "+(v.to===me?L().you:g.players[v.to].name):"");
+  b.appendChild(who);b.appendChild(document.createTextNode(m));
+  $("board").appendChild(b);
+  setTimeout(function(){if(b.parentNode)b.remove()},4500);
+}
+function openChat(){
+  var t=L(),o=others(),p=$("panel-chat");
+  var h='<h2>'+t.chatTitle+'</h2><div><h3>'+t.chatTo+'</h3><div class="seg">'+[[-1,t.everyone]].concat(o.map(function(i){return [i,esc(g.players[i].name)]})).map(function(it){
+    return '<button type="button" data-aim="'+it[0]+'" aria-pressed="'+(aim===it[0])+'">'+it[1]+'</button>';
+  }).join("")+'</div></div>';
+  h+='<div class="phrases">'+t.phrases.map(function(x,i){return '<button type="button" data-ph="'+i+'">'+esc(x)+'</button>'}).join("")+'</div>';
+  h+='<div class="who"><input type="text" id="chat-text" maxlength="40" autocomplete="off" placeholder="'+t.chatPh+'" aria-label="'+t.chatPh+'"><button type="button" class="cta" id="chat-send" style="padding:0 20px">'+t.send+'</button></div>';
+  h+='<button type="button" class="ghost" id="chat-close">'+t.close+'</button>';
+  p.innerHTML=h;
+  var all=function(q){return Array.prototype.slice.call(p.querySelectorAll(q))};
+  all("[data-aim]").forEach(function(b){b.addEventListener("click",function(){
+    aim=parseInt(b.getAttribute("data-aim"),10);clearTimeout(aimT);
+    all("[data-aim]").forEach(function(x){x.setAttribute("aria-pressed",x===b)});renderReact();
+  })});
+  all("[data-ph]").forEach(function(b){b.addEventListener("click",function(){if(sendChat(t.phrases[parseInt(b.getAttribute("data-ph"),10)]))closeSheets()})});
+  $("chat-send").addEventListener("click",function(){if(sendChat($("chat-text").value))closeSheets()});
+  $("chat-text").addEventListener("keydown",function(e){if(e.key==="Enter"&&sendChat($("chat-text").value))closeSheets()});
+  $("chat-close").addEventListener("click",closeSheets);
+  $("sheet-chat").classList.add("open");
+}
+
 // ---------- Sheets ----------
 function seg(items,cur,name){
   return '<div class="seg">'+items.map(function(it){return '<button type="button" data-set="'+name+'" data-val="'+it[0]+'" aria-pressed="'+(String(cur)===String(it[0]))+'">'+it[1]+'</button>'}).join("")+'</div>';
@@ -1593,7 +1702,7 @@ function openScores(){
   $("scores-close").addEventListener("click",closeSheets);
   $("sheet-scores").classList.add("open");
 }
-function closeSheets(){["sheet-setup","sheet-rules","sheet-scores","sheet-online","sheet-win"].forEach(function(id){$(id).classList.remove("open")})}
+function closeSheets(){["sheet-setup","sheet-rules","sheet-scores","sheet-online","sheet-chat","sheet-win"].forEach(function(id){$(id).classList.remove("open")})}
 function setLang(l){
   lang=l;try{localStorage.setItem("ludo-lang",l)}catch(e){}
   renderAll();
