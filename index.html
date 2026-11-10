@@ -106,6 +106,8 @@ h1 span{color:var(--accent)}
 #btn-online{background:var(--ink);color:var(--cloth);border-color:var(--ink)}
 .invite{position:fixed;top:max(10px,env(safe-area-inset-top));left:12px;right:12px;max-width:516px;margin:0 auto;z-index:40;display:none;align-items:center;gap:8px;background:var(--ink);color:var(--cloth);border-radius:14px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.5);font-weight:700}
 .invite.open{display:flex}
+.invite.update{top:auto;bottom:max(12px,env(safe-area-inset-bottom));background:var(--accent);color:#1a1500}
+.invite.update button{background:#1a1500;color:var(--accent)}
 .invite span{flex:1;min-width:0}
 .invite button{flex:none;border:0;border-radius:10px;min-height:42px;padding:0 14px;font-weight:800;background:var(--accent);color:#1a1500}
 .invite button.q{background:none;color:var(--cloth);border:1.5px solid var(--cloth)}
@@ -245,6 +247,7 @@ h1 span{color:var(--accent)}
 </div>
 
 <div class="invite" id="invite-bar" role="status"></div>
+<div class="invite update" id="update-bar" role="status"></div>
 <div class="sheet" id="sheet-setup"><div class="panel" id="panel-setup"></div></div>
 <div class="sheet" id="sheet-rules"><div class="panel" id="panel-rules"></div></div>
 <div class="sheet" id="sheet-online"><div class="panel" id="panel-online"></div></div>
@@ -384,6 +387,7 @@ en:{sub:"West African house rules",roll:"Roll",newGame:"New game",rules:"Rules",
   create:"Start a private game",createNote:"Uses the rules, timer and points entry from New game.",createBtn:"Create game",
   lobby:"Private game",codeIs:"Game code",invite:"Invite players",inviteText:function(c){return "Join my Ludo Teranga game. Code: "+c},copied:"Invite copied.",
   waitingSeat:"Waiting for a player…",hostTag:"host",youTag:"you",emptyNote:"Seats still empty when you start are played by the computer.",
+  updateReady:"A newer version of the game is ready.",updateGo:"Update",
   toAll:"→ All",toOne:function(n){return "→ "+n},you:"you",everyone:"Everyone",chatTitle:"Say something",chatTo:"Who sees it",chatPh:"Short message",send:"Send",
   phrases:["Got you!","Nice move!","Hurry up!","Good game!","Wait for me!","Thank you!","Bad luck!","I'm coming for you!"],
   friends:"Friends",yourCode:"Your friend code:",share:"Share",addFriend:"Add",fcPh:"Friend code",remove:"Remove",addF:"+ Friend",
@@ -440,6 +444,7 @@ fr:{sub:"Règles de la maison, façon Afrique de l'Ouest",roll:"Lancer",newGame:
   create:"Lancer une partie privée",createNote:"Reprend les règles, le temps et la mise de Nouvelle partie.",createBtn:"Créer la partie",
   lobby:"Partie privée",codeIs:"Code de la partie",invite:"Inviter des joueurs",inviteText:function(c){return "Rejoins ma partie de Ludo Teranga. Code : "+c},copied:"Invitation copiée.",
   waitingSeat:"En attente d'un joueur…",hostTag:"hôte",youTag:"vous",emptyNote:"Les sièges encore vides au départ sont joués par l'ordinateur.",
+  updateReady:"Une nouvelle version du jeu est prête.",updateGo:"Mettre à jour",
   toAll:"→ Tous",toOne:function(n){return "→ "+n},you:"vous",everyone:"Tout le monde",chatTitle:"Dire quelque chose",chatTo:"Qui le voit",chatPh:"Message court",send:"Envoyer",
   phrases:["Je t'ai eu !","Beau coup !","Dépêche-toi !","Belle partie !","Attends-moi !","Merci !","Pas de chance !","J'arrive pour toi !"],
   friends:"Amis",yourCode:"Votre code ami :",share:"Partager",addFriend:"Ajouter",fcPh:"Code ami",remove:"Retirer",addF:"+ Ami",
@@ -1762,6 +1767,24 @@ function boot(data){
     if(fcClean(pendingFriend).length===8&&!pendingCode){closeSheets();openOnline();addFriendByCode(pendingFriend)}
   }
 }
+// ---------- Updates: tell the player when a newer version of the game is online ----------
+var BUILD="14";
+function checkUpdate(){
+  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
+  fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){
+    v=String(v).trim();
+    if(!v||v===BUILD||!/^\d+$/.test(v))return;
+    var bar=$("update-bar");
+    bar.className="invite update open";
+    bar.innerHTML='<span>'+L().updateReady+'</span><button type="button" id="update-go">'+L().updateGo+'</button>';
+    $("update-go").addEventListener("click",function(){
+      var go=function(){location.reload()};
+      try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(function(r){return r?r.update():null}).then(go,go);else go()}catch(e){go()}
+    });
+  }).catch(function(){});
+}
+setTimeout(checkUpdate,4000);setInterval(checkUpdate,180000);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)checkUpdate()});
 boot({});
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
 </script>
