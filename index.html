@@ -62,7 +62,7 @@ h1{font-family:var(--display);font-weight:800;font-size:1.75rem;line-height:1;ma
 h1 span{color:var(--accent)}
 .sub{margin:2px 0 0;color:var(--muted);font-size:.8rem}
 .lang{display:flex;border:1.5px solid var(--muted);border-radius:999px;overflow:hidden;flex:none}
-.lang button{background:none;border:0;padding:8px 12px;font-weight:700;font-size:.8rem;min-height:40px}
+.lang button{background:none;border:0;padding:8px 10px;font-weight:700;font-size:.8rem;min-height:40px}
 .lang button[aria-pressed="true"]{background:var(--ink);color:var(--cloth)}
 
 .chips{display:flex;gap:6px}
@@ -203,7 +203,7 @@ h1 span{color:var(--accent)}
 @media (max-width:370px){
   .app{padding-left:12px;padding-right:12px;gap:10px}
   .chips{gap:4px}.chip{padding:6px 5px}.chip b{font-size:.74rem;gap:4px}.chip i{width:9px;height:9px}.chip small{font-size:.68rem}
-  h1{font-size:1.5rem}.roll{padding:6px 14px}.die{width:48px;height:48px}.tray{gap:8px;padding:8px 10px}.status{font-size:.88rem}
+  h1{font-size:1.35rem}.lang button{padding:8px 7px;font-size:.74rem}.roll{padding:6px 14px}.die{width:48px;height:48px}.tray{gap:8px;padding:8px 10px}.status{font-size:.88rem}
   .actions button{font-size:.78rem}
 }
 @media (prefers-reduced-motion:reduce){.tok,.tok.slow{transition:none}.tok.can span,.die.shake{animation:none}}
@@ -219,6 +219,7 @@ h1 span{color:var(--accent)}
     <div class="lang" role="group" aria-label="Language">
       <button id="lang-en" type="button">EN</button>
       <button id="lang-fr" type="button">FR</button>
+      <button id="lang-it" type="button">IT</button>
     </div>
   </header>
 
@@ -496,10 +497,100 @@ fr:{sub:"Règles de la maison, façon Afrique de l'Ouest",roll:"Lancer",newGame:
     pts:"Points : +10 ★ par capture, +25 ★ par pion rentré, +100 ★ pour la 1re place, +50 ★ pour la 2e, +25 ★ pour la 3e. En partie à points à 3 ou 4 joueurs, le 1er prend 70 % de la cagnotte et le 2e 30 %. À 2 joueurs, le gagnant prend tout.",
     timer:function(n){return "Chaque joueur a "+n+" secondes pour jouer. Si le temps est écoulé avant le lancer, le tour passe. S'il est écoulé après le lancer, le jeu déplace un pion pour vous."}}}
 };
-var lang="en";
-try{var sv=localStorage.getItem("ludo-lang");if(sv==="fr"||sv==="en")lang=sv}catch(e){}
+// Italian. Any text missing here falls back to English.
+var IT={sub:"Regole di casa dell'Africa occidentale",roll:"Tira",newGame:"Nuova partita",rules:"Regole",start:"Inizia la partita",close:"Chiudi",again:"Gioca ancora",
+  colors:["Rosso","Verde","Giallo","Blu"],cpu:"CPU",player:"Giocatore ",
+  yourRoll:function(n){return n+", tira il dado!"},roll1:function(n){return "Tocca a "+n},
+  pick:"Tocca una pedina che brilla",pickDie:"Tocca un dado, poi una pedina che brilla",thinking:function(n){return n+" sta giocando"},
+  noMove:"Nessuna mossa possibile",oJail:"Le pedine catturate vanno nel kër di chi cattura",oHomeBonus:"Tiro extra quando una pedina arriva al centro",
+  caughtTo:function(n){return "Catturata! Va nel Kër "+n+"."},freed:"Di nuovo nel suo kër. Ora serve un 6 per uscire.",captured:"Catturata!",homeIn:"Arrivata!",
+  wins:function(n){return n+" vince!"},winSub:"Tutte e quattro le pedine sono arrivate.",
+  pot:function(p){return "Piatto: "+p+" ★ · chi vince prende tutto"},friendly:"Partita amichevole · guadagna ★ giocando",friendlyShort:"Amichevole",
+  winBonus:function(b){return "Premio vittoria: +"+b+" ★"},winPot:function(p,b){return "Piatto vinto: +"+p+" ★ · premio: +"+b+" ★"},
+  potLost:"Il computer prende il piatto. Recupera punti in una partita amichevole.",
+  soundBlocked:"L'audio è bloccato su questo dispositivo. Controlla il volume e la modalità silenziosa.",soundOn:"♪ Sì",soundOff:"♪ No",
+  scores:"Punteggi",lbTitle:"Classifica",recent:"Partite recenti",noGames:"Nessuna partita finita. Finisci una partita per comparire qui.",
+  cols:["Giocatore","★","Vittorie","Partite","Catture","Serie"],ord:["1º","2º","3º","4º"],results:"Classifica finale",
+  finishMsg:function(n,p){return n+" arriva "+p+"!"},potSplit:function(p){return "Piatto: "+p+" ★ · 70% al 1º, 30% al 2º"},potWord:"piatto",
+  timer:"Tempo per turno",off:"No",sec:function(n){return n+" s"},timeUp:function(n){return "Tempo scaduto per "+n},autoMove:function(n){return "Tempo scaduto. Il gioco ha mosso per "+n+"."},
+  online:"Gioca online",onTitle:"Gioca online",onNote:"Gioca una partita privata con persone in altri luoghi. Entra solo chi ha il tuo invito.",
+  onNotSet:"Il gioco online non è ancora attivo su questo sito.",yourName:"Il tuo nome",joinTitle:"Entra con un codice",codePh:"CODICE",join:"Entra",
+  create:"Avvia una partita privata",createNote:"Usa le regole, il tempo e la puntata di Nuova partita.",createBtn:"Crea la partita",
+  lobby:"Partita privata",codeIs:"Codice della partita",invite:"Invita giocatori",inviteText:function(c){return "Entra nella mia partita di Ludo Teranga. Codice: "+c},copied:"Invito copiato.",
+  waitingSeat:"In attesa di un giocatore…",hostTag:"host",youTag:"tu",emptyNote:"I posti ancora vuoti all'inizio sono giocati dal computer.",
+  updateReady:"È pronta una nuova versione del gioco.",updateGo:"Aggiorna",
+  toAll:"→ Tutti",toOne:function(n){return "→ "+n},you:"te",everyone:"Tutti",chatTitle:"Di' qualcosa",chatTo:"Chi lo vede",chatPh:"Messaggio breve",send:"Invia",
+  phrases:["Ti ho preso!","Bella mossa!","Sbrigati!","Bella partita!","Aspettami!","Grazie!","Che sfortuna!","Sto arrivando!"],
+  friends:"Amici",yourCode:"Il tuo codice amico:",share:"Condividi",addFriend:"Aggiungi",fcPh:"Codice amico",remove:"Rimuovi",addF:"+ Amico",
+  noFriends:"Ancora nessun amico. Condividi il tuo codice, scrivi qui il codice di un amico, o tocca + Amico accanto a chi gioca con te.",
+  inviteFriends:"Invita un amico",inviteBtn:"Invita",invitedOk:"Invitato",invFrom:function(n){return n+" ti invita a una partita"},notNow:"Non ora",
+  errFc:"Un codice amico ha 8 lettere e numeri. Controllalo e riprova.",errRules:"Gli amici non sono ancora attivi. Le nuove regole del database devono essere pubblicate in Firebase.",errSelf:"Questo è il tuo codice.",
+  shareFc:function(c){return "Aggiungimi su Ludo Teranga. Il mio codice amico: "+c},
+  startMode:"Quando inizia la partita",startManual:"Quando tocco Inizia",startAuto:"Da sola al completo",startEarly:"Inizia ora con i giocatori presenti",
+  autoNoteHost:"La partita inizia da sola quando tutti i posti sono occupati. Puoi anche iniziare prima; i posti vuoti vanno al computer.",
+  autoNoteGuest:"La partita inizia quando tutti i posti sono occupati, o prima se l'host la avvia.",startingNow:"Ci siete tutti. Si parte…",
+  startOnline:"Inizia la partita",waitHost:"In attesa che l'host inizi…",leave:"Esci dalla partita",waitAgain:"In attesa che l'host avvii la prossima partita…",
+  rejoinTitle:"Ti riportiamo nella tua partita…",rejoinNote:"Riconnessione in corso. Il tuo posto e le tue pedine sono conservati.",rejoinStop:"Ferma e gioca su questo telefono",
+  errOld:"Questa partita richiede l'ultima versione. Chiudi del tutto il gioco e riaprilo.",
+  acctTitle:"Il tuo account",phCc:"Paese",phPh:"Numero di telefono",signIn:"Accedi con il mio numero",signOut:"Esci",
+  acctNote:"Il tuo numero di telefono è il tuo accesso su qualsiasi telefono o computer. Ritrova il tuo nome, i tuoi punti e i tuoi amici. Gli altri giocatori non lo vedono mai.",
+  signedIn:function(h){return "Accesso fatto · numero che finisce con "+h},welcomeBack:function(n){return "Bentornato, "+n+". I tuoi punti e i tuoi amici sono qui."},acctMade:"Account creato. Usa lo stesso numero su ogni dispositivo.",
+  errPhone:"Questo numero non sembra corretto. Scegli il paese e scrivi il numero.",errLogin:"Accedi prima con il tuo numero di telefono.",
+  errNameNew:"Questo numero è nuovo. Scrivi il tuo nome qui sopra, poi accedi di nuovo.",errAcctOff:"Gli account non sono ancora attivi. Le nuove regole del database devono essere pubblicate in Firebase. Per ora puoi giocare senza accedere.",
+  errName:"Scrivi prima il tuo nome, poi entra.",errNameTaken:"Qualcuno in questa partita usa già questo nome. Scegline un altro.",namePh:"Scrivi il tuo nome",
+  errNoRoom:"Nessuna partita trovata con questo codice.",errStarted:"Questa partita è già iniziata.",errFull:"Questa partita è al completo.",
+  errNet:"Impossibile raggiungere il server di gioco. Controlla la connessione e riprova.",errPoints:function(n){return "Ti servono "+n+" ★ per entrare in questa partita."},
+  onlineTag:"online",awayTag:"assente",roomLine:function(c){return "Online · "+c},
+  sumLine:function(n,d,st,sec){return n+" giocatori · "+d+(d>1?" dadi":" dado")+" · "+(st?"puntata "+st+" ★":"amichevole")+" · "+sec+" s per turno"},
+  welcome:"Chi gioca?",welcomeNote:"Scrivi un nome e scegli un'immagine per ogni giocatore. Imposta un posto su Giocatore per ogni persona al tavolo.",
+  setup:"Nuova partita",players:"Giocatori",who:"Chi gioca",human:"Giocatore",comp:"Computer",ruleset:"Regole",name:"Nome",photo:"Foto",
+  stake:"Punti da giocare",stakeNote:"Ogni giocatore mette gli stessi punti e chi vince prende il piatto. I computer fanno lo stesso. Un nome nuovo parte con 1.000 ★.",
+  forfeit:"C'è una partita in corso. Iniziarne una nuova fa perdere i punti già nel piatto.",
+  errSame:"Due giocatori hanno lo stesso nome. Dai a ciascuno un nome diverso.",errStake:"Un giocatore non ha abbastanza punti per questa partita. Scegli una cifra più bassa.",
+  p1:"Senegal classico · 1 dado",p2:"Africa occidentale · 2 dadi",
+  oSafe:"Caselle stella e di partenza sicure",oBlock:"Due pedine bloccano la strada",oBonus:"Tiro extra dopo una cattura",oHome:"La pedina che cattura va subito al centro",
+  rulesTitle:"Come si gioca",
+  r:{out:"Fai 6 per far uscire una pedina.",
+    one:"Un 6 ti dà un altro tiro.",
+    two:"Gioca ogni dado su una pedina, o tutti e due sulla stessa. Un doppio 6 ti dà un altro tiro.",
+    homeBonus:"Una pedina arrivata al centro dà diritto a un altro tiro.",
+    jail:"Arriva su una pedina avversaria sola per catturarla. La pedina va nel tuo kër. Il proprietario deve fare 6 per riportarla nel suo kër, poi un altro 6 per farla uscire.",
+    cap:"Arriva su una pedina avversaria sola per catturarla e rimandarla a casa.",
+    block:"Due tue pedine sulla stessa casella formano un blocco che non può essere catturato.",
+    blockPass:"Due tue pedine sulla stessa casella formano un blocco. Gli avversari non possono catturarlo né superarlo.",
+    safe:"Le pedine sulle caselle stella e di partenza non possono essere catturate.",
+    bonus:"Una cattura dà diritto a un tiro extra.",
+    home:"La pedina che cattura va subito al centro.",
+    end:"Serve il numero esatto per arrivare al centro. Vince il primo che porta a casa tutte e quattro le pedine. Con 3 o 4 giocatori la partita continua per gli altri posti.",
+    pts:"Punti: +10 ★ per una cattura, +25 ★ per ogni pedina arrivata, +100 ★ per il 1º posto, +50 ★ per il 2º, +25 ★ per il 3º. In una partita a punti con 3 o 4 giocatori, il 1º prende il 70% del piatto e il 2º il 30%. In 2, chi vince prende tutto.",
+    timer:function(n){return "Ogni giocatore ha "+n+" secondi per giocare. Se il tempo scade prima del tiro, il turno passa. Se scade dopo il tiro, il gioco muove una pedina per te."}}};
+T.it=Object.assign({},T.en,IT);T.it.r=Object.assign({},T.en.r,IT.r);
+
+// Language: the phone's own language on first open, then the country of the phone number at sign-in.
+// Once the player picks a language by hand, that choice is kept and never overridden.
+var LANGS=["en","fr","it"],LOCALE={en:"en-US",fr:"fr-FR",it:"it-IT"},lang="en",langManual=false;
+(function(){
+  var sv=null,mk=null;
+  try{sv=localStorage.getItem("ludo-lang");mk=localStorage.getItem("ludo-lang-m")}catch(e){}
+  if(LANGS.indexOf(sv)>=0){lang=sv;langManual=mk!=="0"}
+  else{
+    var prefs=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||"en"]);
+    for(var i=0;i<prefs.length;i++){var two=String(prefs[i]).slice(0,2).toLowerCase();if(LANGS.indexOf(two)>=0){lang=two;break}}
+    try{localStorage.setItem("ludo-lang",lang);localStorage.setItem("ludo-lang-m","0")}catch(e){}
+  }
+})();
 function L(){return T[lang]}
-function fmt(n){return Number(n).toLocaleString(lang==="fr"?"fr-FR":"en-US")}
+function fmt(n){return Number(n).toLocaleString(LOCALE[lang])}
+function langOfPhone(num){return num.indexOf("+221")===0||num.indexOf("+33")===0?"fr":num.indexOf("+39")===0?"it":num.indexOf("+1")===0?"en":""}
+// Sets the language automatically, unless the player has already chosen one.
+function autoLang(l){
+  if(langManual||LANGS.indexOf(l)<0||l===lang)return;
+  lang=l;try{localStorage.setItem("ludo-lang",l);localStorage.setItem("ludo-lang-m","0")}catch(e){}
+  if(g){
+    drawBoard();renderAll();
+    if(phase==="roll")say(rollMsg());else if(phase==="move"&&isHuman(g.turn))say(L().pick);
+  }
+}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 
 // ---------- Points bank: kept on this device ----------
@@ -872,7 +963,7 @@ function renderAll(){
   renderChips();renderDice();renderTokens();renderReact();
   $("roll").disabled=!(phase==="roll"&&isHuman(g.turn));
   $("roll").textContent=L().roll;$("btn-new").textContent=L().newGame;$("btn-rules").textContent=L().rules;$("btn-online").textContent=L().online;$("btn-scores").textContent=L().scores;$("btn-sound").textContent=soundOn?L().soundOn:L().soundOff;$("btn-sound").setAttribute("aria-pressed",soundOn);$("sub").textContent=L().sub;
-  $("lang-en").setAttribute("aria-pressed",lang==="en");$("lang-fr").setAttribute("aria-pressed",lang==="fr");
+  LANGS.forEach(function(l){$("lang-"+l).setAttribute("aria-pressed",lang===l)});
   document.documentElement.lang=lang;
 }
 
@@ -1659,6 +1750,7 @@ function signIn(cc,raw){
   onErr="";acctNote="";
   if(!num){onErr=L().errPhone;renderOnline();return}
   if(!window.crypto||!crypto.subtle){onErr=L().errNet;renderOnline();return}
+  autoLang(langOfPhone(num));
   scramble(num).then(function(aid){
     return dbx("GET","/accounts/"+aid).then(function(d){
       if(d&&d.id&&d.fc){
@@ -1849,7 +1941,7 @@ function openScores(){
   var hs=bank.history||[];
   if(!hs.length)h+='<p class="note" style="margin:0">'+t.noGames+'</p>';
   else h+='<ol class="hist">'+hs.map(function(x){
-    var d=new Date(x.t).toLocaleDateString(lang==="fr"?"fr-FR":"en-US",{day:"numeric",month:"short"});
+    var d=new Date(x.t).toLocaleDateString(LOCALE[lang],{day:"numeric",month:"short"});
     return '<li>'+x.names.map(function(n,i){return (i+1)+". "+esc(n)}).join(" · ")+'<small>'+d+(x.pot?" · "+t.potWord+" "+fmt(x.pot)+" ★":"")+'</small></li>';
   }).join("")+'</ol>';
   h+='</div><button type="button" class="ghost" id="scores-close">'+t.close+'</button>';
@@ -1859,7 +1951,8 @@ function openScores(){
 }
 function closeSheets(){["sheet-setup","sheet-rules","sheet-scores","sheet-online","sheet-chat","sheet-win"].forEach(function(id){$(id).classList.remove("open")})}
 function setLang(l){
-  lang=l;try{localStorage.setItem("ludo-lang",l)}catch(e){}
+  lang=l;langManual=true;try{localStorage.setItem("ludo-lang",l);localStorage.setItem("ludo-lang-m","1")}catch(e){}
+  if($("sheet-online").classList.contains("open"))renderOnline();
   renderAll();
   if(phase==="roll")say(rollMsg());
   else if(phase==="move"&&isHuman(g.turn))say(L().pick);
@@ -1880,6 +1973,7 @@ $("btn-sound").addEventListener("click",function(){
 $("btn-rules").addEventListener("click",function(){renderRules();$("sheet-rules").classList.add("open")});
 $("lang-en").addEventListener("click",function(){setLang("en")});
 $("lang-fr").addEventListener("click",function(){setLang("fr")});
+$("lang-it").addEventListener("click",function(){setLang("it")});
 ["sheet-setup","sheet-rules","sheet-scores"].forEach(function(id){$(id).addEventListener("click",function(ev){if(ev.target===$(id))closeSheets()})});
 
 // ---------- Boot: resumes a game in progress after a reload ----------
@@ -1918,7 +2012,7 @@ function boot(data){
   }
 }
 // ---------- Updates: tell the player when a newer version of the game is online ----------
-var BUILD="15";
+var BUILD="16";
 function checkUpdate(){
   if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
   fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){
