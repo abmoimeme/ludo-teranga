@@ -139,6 +139,8 @@ h1 span{color:var(--accent)}
 #join-code{text-transform:uppercase;letter-spacing:.14em;font-family:var(--display);font-size:1.15rem}
 .ad{text-align:left;display:flex;align-items:center;gap:10px;background:var(--cloth-2);border-radius:14px;padding:8px 12px;min-height:68px;border-left:5px solid var(--adc,var(--accent))}
 .ad .mk{flex:none;width:40px;height:40px;border-radius:10px;background:var(--adc,var(--accent));color:#fff;font-family:var(--display);font-weight:800;font-size:.95rem;display:grid;place-items:center;letter-spacing:.02em}
+.ad .mk.pic{background:#fff;overflow:hidden}.ad .mk img{width:100%;height:100%;display:block}
+.ad.big .mk{width:52px;height:52px;border-radius:12px}
 .ad .tx{flex:1;min-width:0;line-height:1.25}
 .ad b{display:block;font-family:var(--display);font-size:1rem}
 .ad span{display:block;font-size:.8rem;color:var(--muted)}
@@ -982,29 +984,30 @@ function renderAll(){
 
 // ---------- Messages from our own companies (display only) ----------
 var ADS=[
- {mk:"PAH",c:"#1f6fd0",name:"Planet Auto Hub",
+ {mk:"PAH",img:"icons/ad-pah.png",c:"#3c459f",name:"Planet Auto Hub",
   en:["Car parts in Dakar","Toyota · Great Wall · Bosch · Bardahl","@planetautohub"],
   fr:["Pièces auto à Dakar","Toyota · Great Wall · Bosch · Bardahl","@planetautohub"],
   it:["Ricambi auto a Dakar","Toyota · Great Wall · Bosch · Bardahl","@planetautohub"]},
- {mk:"NF",c:"#2f9e58",name:"Nioro Farms",
+ {mk:"NF",img:"icons/ad-nf.png",c:"#4f8a4c",name:"Nioro Farms",
   en:["From the motherland to your shelves","Hibiscus · Baobab · Tamarind · Mango · Cashews · Moringa","niorofarms.com"],
   fr:["De la terre mère à vos rayons","Bissap · Baobab · Tamarin · Mangue · Cajou · Moringa","niorofarms.com"],
   it:["Dalla terra madre ai vostri scaffali","Ibisco · Baobab · Tamarindo · Mango · Anacardi · Moringa","niorofarms.com"]},
- {mk:"JV",c:"#d9731a",name:"Jollof Ventures",
-  en:["Connecting African and diaspora investors with technology","Intelligence · Network · Capital","invest@jollofventures.com"],
-  fr:["Relier les investisseurs d'Afrique et de la diaspora à la tech","Intelligence · Réseau · Capital","invest@jollofventures.com"],
-  it:["Investitori africani e della diaspora incontrano la tecnologia","Intelligence · Rete · Capitale","invest@jollofventures.com"]}
+ {mk:"JV",img:"icons/ad-jv.png",c:"#ea4e1b",name:"Jollof Ventures",
+  en:["African potential. A brighter tomorrow.","AI & Tech · Fintech · Energy · Agribusiness · Healthcare · Logistics","invest@jollofventures.com"],
+  fr:["Le potentiel africain. Un avenir plus radieux.","IA & Tech · Fintech · Énergie · Agrobusiness · Santé · Logistique","invest@jollofventures.com"],
+  it:["Potenziale africano. Un domani più luminoso.","IA & Tech · Fintech · Energia · Agribusiness · Sanità · Logistica","invest@jollofventures.com"]}
 ];
 var adIdx=Math.floor(Math.random()*ADS.length),AD_TAG={en:"Sponsor",fr:"Partenaire",it:"Sponsor"};
 function adText(a){return a[lang]||a.en}
+function adMark(a){return '<div class="mk'+(a.img?' pic':'')+'">'+(a.img?'<img src="'+a.img+'" alt="" width="40" height="40">':a.mk)+'</div>'}
 function renderAd(){
   var a=ADS[adIdx%ADS.length],el=$("ad");if(!el)return;
   el.style.setProperty("--adc",a.c);
-  el.innerHTML='<div class="mk">'+a.mk+'</div><div class="tx"><b>'+esc(a.name)+'</b><span>'+esc(adText(a)[0])+'</span></div><em>'+AD_TAG[lang]+'</em>';
+  el.innerHTML=''+adMark(a)+'<div class="tx"><b>'+esc(a.name)+'</b><span>'+esc(adText(a)[0])+'</span></div><em>'+AD_TAG[lang]+'</em>';
 }
 function adCard(){
   var a=ADS[(adIdx+1)%ADS.length],x=adText(a);
-  return '<div class="ad big" style="--adc:'+a.c+'"><div class="row"><div class="mk">'+a.mk+'</div><div class="tx"><b>'+esc(a.name)+'</b></div><em>'+AD_TAG[lang]+'</em></div><span>'+esc(x[0])+'</span><small>'+esc(x[1])+'<br>'+esc(x[2])+'</small></div>';
+  return '<div class="ad big" style="--adc:'+a.c+'"><div class="row">'+adMark(a)+'<div class="tx"><b>'+esc(a.name)+'</b></div><em>'+AD_TAG[lang]+'</em></div><span>'+esc(x[0])+'</span><small>'+esc(x[1])+'<br>'+esc(x[2])+'</small></div>';
 }
 setInterval(function(){if(document.hidden)return;adIdx=(adIdx+1)%ADS.length;renderAd()},10000);
 
@@ -2075,7 +2078,7 @@ function boot(data){
   }
 }
 // ---------- Updates: tell the player when a newer version of the game is online ----------
-var BUILD="18";
+var BUILD="19";
 function checkUpdate(){
   if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
   fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){
