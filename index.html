@@ -158,6 +158,9 @@ h1 span{color:var(--accent)}
 
 .sheet{position:fixed;inset:0;background:rgba(6,9,26,.78);display:none;align-items:flex-end;justify-content:center;z-index:20}
 .sheet.open{display:flex}
+#toast{position:fixed;left:50%;top:14px;transform:translate(-50%,-140%);z-index:40;max-width:92%;background:#fff;color:#161c3d;font-weight:700;font-size:.95rem;border-radius:14px;padding:10px 16px;box-shadow:0 8px 24px rgba(0,0,0,.5);transition:transform .35s ease;text-align:center;pointer-events:none}
+#toast.on{transform:translate(-50%,0)}
+.streak{margin:0;text-align:center;font-weight:700;color:var(--accent)}
 .panel{background:var(--cloth-2);width:100%;max-width:540px;max-height:92%;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px 22px;display:flex;flex-direction:column;gap:14px}
 .panel>*{flex-shrink:0}
 .panel{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
@@ -274,6 +277,8 @@ h1 span{color:var(--accent)}
 <div class="sheet" id="sheet-online"><div class="panel" id="panel-online"></div></div>
 <div class="sheet" id="sheet-chat"><div class="panel" id="panel-chat"></div></div>
 <div class="sheet" id="sheet-scores"><div class="panel" id="panel-scores"></div></div>
+<div class="sheet" id="sheet-owner"><div class="panel" id="panel-owner"></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
 <div class="sheet win" id="sheet-win"><div class="panel" id="panel-win"></div></div>
 
 <script src="config.js"></script>
@@ -584,6 +589,9 @@ var IT={sub:"Regole di casa dell'Africa occidentale",roll:"Tira",newGame:"Nuova 
     pts:"Punti: +10 ★ per una cattura, +25 ★ per ogni pedina arrivata, +100 ★ per il 1º posto, +50 ★ per il 2º, +25 ★ per il 3º. In una partita a punti con 3 o 4 giocatori, il 1º prende il 70% del piatto e il 2º il 30%. In 2, chi vince prende tutto.",
     timer:function(n){return "Ogni giocatore ha "+n+" secondi per giocare. Se il tempo scade prima del tiro, il turno passa. Se scade dopo il tiro, il gioco muove una pedina per te."}}};
 T.it=Object.assign({},T.en,IT);T.it.r=Object.assign({},T.en.r,IT.r);
+T.en.daily=function(n){return "Daily bonus: +"+n+" ★"};T.fr.daily=function(n){return "Bonus du jour : +"+n+" ★"};T.it.daily=function(n){return "Bonus del giorno: +"+n+" ★"};
+T.en.streak=function(k,n){return "🔥 "+k+" wins in a row: +"+n+" ★"};T.fr.streak=function(k,n){return "🔥 "+k+" victoires de suite : +"+n+" ★"};T.it.streak=function(k,n){return "🔥 "+k+" vittorie di fila: +"+n+" ★"};
+T.en.gift=function(f,n){return "🎁 "+f+" sent you +"+n+" ★"};T.fr.gift=function(f,n){return "🎁 "+f+" vous a envoyé +"+n+" ★"};T.it.gift=function(f,n){return "🎁 "+f+" ti ha inviato +"+n+" ★"};
 
 // Language: the phone's own language on first open, then the country of the phone number at sign-in.
 // Once the player picks a language by hand, that choice is kept and never overridden.
@@ -634,7 +642,11 @@ function recordGame(){
   order.forEach(function(pi,i){
     var pl=g.players[pi],pr=pl.key&&bank.profiles[pl.key];if(!pr)return;
     pr.games=(pr.games||0)+1;
-    if(i===0){pr.wins=(pr.wins||0)+1;pr.run=(pr.run||0)+1;pr.best=Math.max(pr.best||0,pr.run)}else pr.run=0;
+    if(i===0){
+      pr.wins=(pr.wins||0)+1;pr.run=(pr.run||0)+1;pr.best=Math.max(pr.best||0,pr.run);
+      var sb=streakBonus(pr.run);
+      if(sb){pr.pts+=sb;g.streaks=g.streaks||{};g.streaks[pi]={k:pr.run,n:sb}}
+    }else pr.run=0;
     pr.t=Date.now();
   });
   bank.history=[{t:Date.now(),names:order.map(function(pi){return g.players[pi].name}),pot:g.pot}].concat(bank.history||[]).slice(0,10);
@@ -651,6 +663,28 @@ function renamePlayer(from,to){
   cfg.names=cfg.names.map(function(n){return keyOf(n)===a?to:n});
   if(g)g.players.forEach(function(pl){if(keyOf(pl.name)===a){pl.name=to;if(pl.key)pl.key=b}});
   return ch;
+}
+// Extra points for winning several games in a row, and once a day for opening the game.
+var STREAK=[0,0,50,100,150,200],DAILY=200,toastT=null;
+function streakBonus(run){return STREAK[Math.min(run,STREAK.length-1)]||0}
+function toast(m){var el=$("toast");if(!el)return;el.textContent=m;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove("on")},4200)}
+function today(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
+function myProfile(make){
+  var nm=((cfg.me&&cfg.me.name)||"").trim();
+  if(!nm){var hs=humanSeats();nm=(cfg.names[hs.length?hs[0]:0]||"").trim()}
+  if(!nm)return null;
+  var k=keyOf(nm);
+  if(!bank.profiles[k]&&make)bank.profiles[k]={name:nm,pts:WELCOME,t:0};
+  return bank.profiles[k]||null;
+}
+function dailyBonus(){
+  var pr=myProfile(true),d=today();
+  if(!pr||pr.day===d)return;
+  var first=!pr.day;pr.day=d;
+  // a brand-new player already starts with welcome points; the daily bonus begins the next day
+  if(!first||pr.games){pr.pts+=DAILY;toast(L().daily(fmt(DAILY)));sfx("home")}
+  pr.t=Date.now();saveBank();
+  if(g&&typeof renderChips==="function")renderChips();
 }
 function award(pi,n){
   var pl=g.players[pi],pr=pl.key&&bank.profiles[pl.key];
@@ -1597,6 +1631,7 @@ function openInbox(){
     invites={};
     Object.keys(box||{}).forEach(function(k){
       var v=box[k];
+      if(v&&typeof v.gift==="number"){takeGift(k,v);return}
       if(v&&typeof v.code==="string"&&/^[A-Z0-9]{6}$/.test(v.code)&&Math.abs(Date.now()-(v.t||0))<20*60000&&!(net&&net.code===v.code))invites[k]=v;
     });
     renderInvite();
@@ -1614,6 +1649,67 @@ function openInbox(){
     upd();
   });
 }
+function takeGift(k,v){
+  var done=[];try{done=JSON.parse(localStorage.getItem("ludo-gifts")||"[]")||[]}catch(e){}
+  dbx("PUT","/inbox/"+myFc+"/"+k,null).catch(function(){});
+  if(done.indexOf(k)>=0)return;
+  var n=Math.floor(v.gift),pr=myProfile(true);
+  if(!pr||!(n>0&&n<=100000))return;
+  done.push(k);try{localStorage.setItem("ludo-gifts",JSON.stringify(done.slice(-40)))}catch(e){}
+  pr.pts+=n;pr.t=Date.now();saveBank();
+  toast(L().gift(String(v.from||"").slice(0,12)||"Ludo Teranga",fmt(n)));sfx("win");
+  if(g)renderChips();
+}
+// ---------- Owner tools: opened by tapping the copyright line five times, then a private code ----------
+var OWNER="509df743e42091cd8e90480d6a3754c07ae3b30c89b9d8a04c3d9757dc47f6fe",ownerOn=false,footTaps=[],ownTo="",ownMsg="";
+try{ownerOn=localStorage.getItem("ludo-owner")===OWNER}catch(e){}
+function sha(s){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)).then(function(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return ("0"+x.toString(16)).slice(-2)}).join("")})}
+function openOwner(){renderOwner();$("sheet-owner").classList.add("open")}
+function renderOwner(){
+  var p=$("panel-owner"),fr=lang==="fr",h='<h2>'+(fr?"Outils du propriétaire":"Owner tools")+'</h2>';
+  if(!ownerOn){
+    h+='<div class="who"><input type="password" id="own-code" autocomplete="off" placeholder="Code" aria-label="Code"><button type="button" class="cta" id="own-go" style="padding:0 20px">OK</button></div>';
+  }else{
+    var pr=myProfile(true);
+    h+='<div><h3>'+(fr?"Mes points":"My points")+(pr?" · "+esc(pr.name)+" ★ "+fmt(pr.pts):"")+'</h3><div class="seg">'+[1000,10000,50000].map(function(n){return '<button type="button" data-own-me="'+n+'">+'+fmt(n)+'</button>'}).join("")+'</div>'+(pr?"":'<p class="note">'+(fr?"Écrivez d'abord votre nom dans « Jouer en ligne ».":"Type your name under “Play online” first.")+'</p>')+'</div>';
+    h+='<div><h3>'+(fr?"Offrir des points à":"Gift points to")+'</h3><div class="seg">'+friends.slice(0,12).map(function(f){return '<button type="button" data-own-to="'+f.fc+'" aria-pressed="'+(ownTo===f.fc)+'">'+esc(f.name||fcShow(f.fc))+'</button>'}).join("")+'</div><div class="who" style="margin-top:8px"><input type="text" id="own-fc" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="'+(fr?"ou code ami":"or friend code")+'" value="'+(ownTo&&!isFriend(ownTo)?fcShow(ownTo):"")+'"></div></div>';
+    h+='<div class="seg">'+[500,1000,5000,10000].map(function(n){return '<button type="button" data-own-gift="'+n+'">🎁 '+fmt(n)+'</button>'}).join("")+'</div>';
+    h+='<button type="button" class="ghost" id="own-lock">'+(fr?"Verrouiller":"Lock owner tools")+'</button>';
+  }
+  h+='<p class="note" id="own-msg" style="margin:0">'+esc(ownMsg)+'</p><button type="button" class="ghost" id="own-close">'+L().close+'</button>';
+  p.innerHTML=h;ownMsg="";
+  var all=function(q){return Array.prototype.slice.call(p.querySelectorAll(q))};
+  $("own-close").addEventListener("click",closeSheets);
+  if($("own-go"))$("own-go").addEventListener("click",function(){
+    var c=String($("own-code").value||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+    sha("ludo-owner:"+c).then(function(x){
+      if(x===OWNER){ownerOn=true;try{localStorage.setItem("ludo-owner",OWNER)}catch(e){}}else ownMsg=fr?"Code incorrect.":"Wrong code.";
+      renderOwner();
+    });
+  });
+  if($("own-lock"))$("own-lock").addEventListener("click",function(){ownerOn=false;try{localStorage.removeItem("ludo-owner")}catch(e){}closeSheets()});
+  all("[data-own-me]").forEach(function(b){b.addEventListener("click",function(){
+    var pr=myProfile(true);if(!pr)return;
+    var n=parseInt(b.getAttribute("data-own-me"),10);pr.pts+=n;pr.t=Date.now();saveBank();if(g)renderChips();
+    ownMsg="+"+fmt(n)+" ★";renderOwner();
+  })});
+  all("[data-own-to]").forEach(function(b){b.addEventListener("click",function(){ownTo=b.getAttribute("data-own-to");renderOwner()})});
+  if($("own-fc"))$("own-fc").addEventListener("input",function(){var c=fcClean($("own-fc").value);if(c.length===8){ownTo=c;all("[data-own-to]").forEach(function(x){x.setAttribute("aria-pressed",x.getAttribute("data-own-to")===c)})}});
+  all("[data-own-gift]").forEach(function(b){b.addEventListener("click",function(){
+    var n=parseInt(b.getAttribute("data-own-gift"),10);
+    if(!/^[A-Z0-9]{8}$/.test(ownTo)||ownTo===myFc){ownMsg=fr?"Choisissez d'abord un ami.":"Choose a friend first.";renderOwner();return}
+    var who=(friends.filter(function(f){return f.fc===ownTo})[0]||{}).name||fcShow(ownTo);
+    b.disabled=true;
+    dbx("PUT","/inbox/"+ownTo+"/G"+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,6).toUpperCase(),{gift:n,from:meName(),t:Date.now()})
+      .then(function(){ownMsg=(fr?"Envoyé à ":"Sent to ")+who+": +"+fmt(n)+" ★";renderOwner()})
+      .catch(function(e){ownMsg=netMsg(e);renderOwner()});
+  })});
+}
+document.addEventListener("click",function(ev){
+  if(!ev.target||!ev.target.classList||!ev.target.classList.contains("foot"))return;
+  var now=Date.now();footTaps=footTaps.filter(function(t){return now-t<3000});footTaps.push(now);
+  if(footTaps.length>=5){footTaps=[];openOwner()}
+});
 function clearInvite(k){delete invites[k];dbx("PUT","/inbox/"+myFc+"/"+k,null).catch(function(){});renderInvite()}
 function acceptInvite(code){
   if(net)leaveRoom();
@@ -1807,7 +1903,7 @@ function scramble(s){
 function saveAcct(){try{if(acct)localStorage.setItem("ludo-acct",JSON.stringify(acct));else localStorage.removeItem("ludo-acct")}catch(e){}}
 function acctDoc(){
   var nm=meName(),pr=bank.profiles[keyOf(nm)]||{};
-  return {id:myId,fc:myFc,name:nm,av:meAv(),pts:typeof pr.pts==="number"?pr.pts:WELCOME,games:pr.games||0,wins:pr.wins||0,caps:pr.caps||0,best:pr.best||0,run:pr.run||0,friends:friends.slice(0,40),t:Date.now()};
+  return {id:myId,fc:myFc,name:nm,av:meAv(),pts:typeof pr.pts==="number"?pr.pts:WELCOME,games:pr.games||0,wins:pr.wins||0,caps:pr.caps||0,best:pr.best||0,run:pr.run||0,day:pr.day||"",friends:friends.slice(0,40),t:Date.now()};
 }
 // Saves the signed-in player's data a moment after it changes.
 function pushAcct(now){
@@ -1836,8 +1932,8 @@ function adoptAcct(d){
     cfg.me={name:nm,av:cleanAv(d.av,0)};
     var k=keyOf(nm),pr=bank.profiles[k]||{name:nm};
     pr.name=nm;pr.av=cleanAv(d.av,0);pr.pts=typeof d.pts==="number"?d.pts:WELCOME;
-    pr.games=d.games||0;pr.wins=d.wins||0;pr.caps=d.caps||0;pr.best=d.best||0;pr.run=d.run||0;pr.t=Date.now();
-    bank.profiles[k]=pr;saveLocal();
+    pr.games=d.games||0;pr.wins=d.wins||0;pr.caps=d.caps||0;pr.best=d.best||0;pr.run=d.run||0;if(typeof d.day==="string"&&/^\d{4}-\d\d-\d\d$/.test(d.day)&&d.day>(pr.day||""))pr.day=d.day;pr.t=Date.now();
+    bank.profiles[k]=pr;saveLocal();setTimeout(dailyBonus,600);
   }
   friends=(Array.isArray(d.friends)?d.friends:[]).filter(function(f){return f&&/^[A-Z0-9]{8}$/.test(f.fc||"")&&f.fc!==myFc})
     .map(function(f){return {fc:f.fc,name:String(f.name||"").slice(0,12)||fcShow(f.fc),av:cleanAv(f.av,0)}}).slice(0,40);
@@ -2020,6 +2116,7 @@ function showWin(){
     var pl=g.players[pi];
     h+='<li><em>'+t.ord[i]+'</em><i style="background:'+CSSC[pl.seat]+'"></i><b>'+esc(pl.name)+'</b><span>'+(pl.key?"+"+fmt(g.gains[pi]||0)+" ★":(pl.kind==="cpu"?t.cpu:""))+'</span></li>';
   });
+  g.players.forEach(function(pl,pi){var sk=pl.key&&g.streaks&&g.streaks[pi];if(sk)h+='</ol><p class="streak">'+esc(t.streak(sk.k,fmt(sk.n)))+'</p><ol class="places" style="display:none">'});
   h+='</ol>'+adCard()+(live()&&net.room.host!==myId?'<p class="note" style="margin:0">'+t.waitAgain+'</p>':'<button type="button" class="cta" id="again">'+t.again+'</button>')+'<button type="button" class="ghost" id="win-scores">'+t.scores+'</button><button type="button" class="ghost" id="win-setup">'+t.newGame+'</button>';
   $("panel-win").innerHTML=h;
   if($("again"))$("again").addEventListener("click",function(){if(live())rematch();else{closeSheets();startGame()}});
@@ -2049,7 +2146,7 @@ function openScores(){
   $("scores-close").addEventListener("click",closeSheets);
   $("sheet-scores").classList.add("open");
 }
-function closeSheets(){["sheet-setup","sheet-rules","sheet-scores","sheet-online","sheet-chat","sheet-win"].forEach(function(id){$(id).classList.remove("open")})}
+function closeSheets(){["sheet-setup","sheet-rules","sheet-scores","sheet-online","sheet-chat","sheet-owner","sheet-win"].forEach(function(id){$(id).classList.remove("open")})}
 function setLang(l){
   lang=l;langManual=true;try{localStorage.setItem("ludo-lang",l);localStorage.setItem("ludo-lang-m","1")}catch(e){}
   if($("sheet-online").classList.contains("open"))renderOnline();
@@ -2082,6 +2179,8 @@ var firstVisit=false;
 function boot(data){
   try{firstVisit=!localStorage.getItem("ludo-cfg2")}catch(e){}
   try{var c=localStorage.getItem("ludo-cfg2");if(c){var cj=JSON.parse(c);if(cj&&cj.kinds&&cj.names&&cj.avs)cfg=cj}}catch(e){}
+  // a signed-in player keeps their name on this phone even if they have not played yet
+  try{if(acct&&acct.name&&!((cfg.me&&cfg.me.name)||"").trim()){cfg.me=cfg.me||{};cfg.me.name=String(acct.name).slice(0,12)}}catch(e){}
   if(typeof cfg.timer!=="number")cfg.timer=15;
   if(typeof cfg.jail!=="boolean")cfg.jail=true;
   cfg.captureHome=false;
@@ -2111,8 +2210,10 @@ function boot(data){
     if(fcClean(pendingFriend).length===8&&!pendingCode){closeSheets();openOnline();addFriendByCode(pendingFriend)}
   }
 }
+setTimeout(dailyBonus,1500);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)dailyBonus()});
 // ---------- Updates: tell the player when a newer version of the game is online ----------
-var BUILD="20";
+var BUILD="21";
 function checkUpdate(){
   if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
   fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){
