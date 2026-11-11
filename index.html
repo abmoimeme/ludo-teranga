@@ -631,7 +631,7 @@ function keyOf(n){return String(n||"").trim().toLowerCase()}
 function profileOf(n){return bank.profiles[keyOf(n)]||null}
 function balanceOf(n){var p=profileOf(n);return p?p.pts:WELCOME}
 function saveLocal(){try{localStorage.setItem("ludo-bank",JSON.stringify(bank))}catch(e){}}
-function saveBank(){saveLocal();if(typeof pushAcct==="function")pushAcct()}
+function saveBank(){saveLocal();if(typeof pushAcct==="function")pushAcct();if(typeof sharePts==="function")sharePts()}
 var BONUS=[100,50,25,0];
 function potShare(place,n,pot){if(n===2)return place===1?pot:0;var a=Math.round(pot*0.7);return place===1?a:place===2?pot-a:0}
 function stat(pi,k,n){var pl=g.players[pi],pr=pl.key&&bank.profiles[pl.key];if(pr&&n){pr[k]=(pr[k]||0)+n;pr.t=Date.now()}}
@@ -998,7 +998,25 @@ function renderDice(shakeVals){
   box.innerHTML=html;
   Array.prototype.slice.call(box.children).forEach(function(b){b.addEventListener("click",function(){onDie(parseInt(b.getAttribute("data-di"),10))})});
 }
-function tagOf(pl){return live()&&pl.kind==="human"?(fresh(pl.id)?L().onlineTag:L().awayTag):L().cpu}
+function tagOf(pl){
+  if(!(live()&&pl.kind==="human"))return L().cpu;
+  if(!fresh(pl.id))return L().awayTag;
+  // an opponent's points, as shared by their own phone during this game
+  var v=net.room.pts&&net.room.pts[pl.id];
+  return (typeof v==="number"&&v>=0&&v<1e9)?"★ "+fmt(Math.floor(v)):L().onlineTag;
+}
+// Each phone shares its own player's points with the others in the game, whenever they change.
+var ptsT=null,ptsSent=null;
+function sharePts(){
+  clearTimeout(ptsT);
+  ptsT=setTimeout(function(){
+    if(!live()||!g)return;
+    var me=null;g.players.forEach(function(pl){if(pl.id===myId&&pl.key)me=bank.profiles[pl.key]});
+    if(!me||typeof me.pts!=="number")return;
+    var tag=net.code+":"+me.pts;if(tag===ptsSent)return;ptsSent=tag;
+    api("PUT","/pts/"+myId,me.pts).catch(function(){ptsSent=null});
+  },500);
+}
 function renderChips(){
   var h="";
   g.players.forEach(function(pl,pi){
@@ -1319,6 +1337,7 @@ function rebuildRound(){
   var seq=evList();
   for(var q=0;q<seq.length;q++){simEvent(g,seq[q]);net.log[q]=canon(seq[q])}
   net.applied=net.ok=seq.length;
+  ptsSent=null;sharePts();
   mount();
   if(g.over){phase="over";renderAll();showWin()}
   else if(g.dice.length){selDie=0;step()}
@@ -1338,7 +1357,7 @@ function openStream(){
   if(net.es){try{net.es.close()}catch(e){}}
   var es=net.es=new EventSource(roomUrl(net.code));
   net.lastMsg=Date.now();
-  es.addEventListener("put",function(m){if(!net||net.es!==es)return;net.lastMsg=Date.now();var d=JSON.parse(m.data);setPath(d.path,d.data);noteChat(d.path,d.data);onRoom()});
+  es.addEventListener("put",function(m){if(!net||net.es!==es)return;net.lastMsg=Date.now();var d=JSON.parse(m.data);setPath(d.path,d.data);noteChat(d.path,d.data);onRoom();if(String(d.path).indexOf("/pts")===0&&live()&&g)renderChips()});
   es.addEventListener("patch",function(m){
     if(!net||net.es!==es)return;
     net.lastMsg=Date.now();
@@ -2213,7 +2232,7 @@ function boot(data){
 setTimeout(dailyBonus,1500);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)dailyBonus()});
 // ---------- Updates: tell the player when a newer version of the game is online ----------
-var BUILD="21";
+var BUILD="22";
 function checkUpdate(){
   if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
   fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){
