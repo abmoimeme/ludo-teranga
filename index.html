@@ -72,7 +72,7 @@ h1 span{color:var(--accent);display:block}
 .lang button{background:none;border:0;padding:8px 10px;font-weight:700;font-size:.8rem;min-height:40px}
 .lang button[aria-pressed="true"]{background:var(--ink);color:var(--cloth)}
 
-.chips{display:flex;gap:6px}
+.chips{display:none}
 .chip{flex:1;min-width:0;background:var(--cloth-2);border-radius:12px;padding:7px 8px;border:2px solid transparent;display:flex;flex-direction:column;gap:1px}
 .chip.on{border-color:var(--ink);background:#26306a}
 .chip b{display:flex;align-items:center;gap:5px;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -81,6 +81,16 @@ h1 span{color:var(--accent);display:block}
 
 .board{position:relative;width:100%;aspect-ratio:1;border-radius:14px;overflow:hidden;border:5px solid #0b102a;box-shadow:0 14px 30px rgba(0,0,0,.45)}
 .board svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ker{position:absolute;width:40%;height:40%;z-index:1;pointer-events:none;box-sizing:border-box;border-radius:4px}
+.ker small{position:absolute;left:0;right:0;top:1.2%;height:14%;display:flex;align-items:center;justify-content:center;gap:4px;font-size:.7rem;font-weight:800;color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+.ker.dark small{color:#1a1500;text-shadow:none}
+.ker i{position:absolute;left:14%;top:84.3%;height:2.9%;width:0;max-width:72%;border-radius:99px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.4);transition:width .1s linear;display:none}
+.ker.dark i{background:#1a1500}
+.ker.clock i{display:block}
+.ker.low i{background:#ff3b30}
+.ker.on{box-shadow:inset 0 0 0 3px #fff,inset 0 0 14px 5px rgba(255,255,255,.75);animation:kerglow 1.2s ease-in-out infinite}
+@keyframes kerglow{0%,100%{box-shadow:inset 0 0 0 3px #fff,inset 0 0 12px 4px rgba(255,255,255,.55)}50%{box-shadow:inset 0 0 0 4px #fff,inset 0 0 26px 10px rgba(255,255,255,.95)}}
+@media (prefers-reduced-motion:reduce){.ker.on{animation:none}}
 .tok{position:absolute;width:6.6667%;height:6.6667%;padding:0;border:0;background:none;transition:left .1s linear,top .1s linear;z-index:2;cursor:default}
 .tok.slow{transition:left .42s ease,top .42s ease}
 .tok span{position:absolute;inset:11%;border-radius:50%;border:2px solid #0b102a;transform:scale(var(--s,1));transition:transform .15s;
@@ -104,7 +114,7 @@ h1 span{color:var(--accent);display:block}
 .roll{flex:none;font-family:var(--display);font-weight:800;font-size:1.2rem;background:var(--accent);color:#1a1500;border:0;border-radius:14px;padding:6px 20px;min-height:54px;box-shadow:0 4px 0 #9a7a00}
 .roll:active{transform:translateY(2px);box-shadow:0 2px 0 #9a7a00}
 .roll:disabled{opacity:.35;cursor:default;box-shadow:none}
-.timer{display:flex;align-items:center;gap:10px;height:14px;margin:-4px 2px}
+.timer{display:none}
 .timer.off{visibility:hidden}
 .timer div{flex:1;height:8px;border-radius:99px;background:var(--cloth-2);overflow:hidden}
 .timer i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .1s linear}
@@ -149,7 +159,7 @@ h1 span{color:var(--accent);display:block}
 .code small{display:block;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
 .code b{font-family:var(--display);font-size:2.2rem;letter-spacing:.14em;color:var(--accent);line-height:1.1;-webkit-user-select:all;user-select:all}
 #join-code{text-transform:uppercase;letter-spacing:.14em;font-family:var(--display);font-size:1.15rem}
-.ad{text-align:left;display:flex;align-items:center;gap:10px;background:var(--cloth-2);border-radius:14px;padding:8px 12px;min-height:68px;border-left:5px solid var(--adc,var(--accent))}
+.ad{text-align:left;display:flex;align-items:center;gap:10px;background:var(--cloth-2);border-radius:14px;padding:6px 12px;min-height:60px;border-left:5px solid var(--adc,var(--accent))}
 .ad .mk{flex:none;width:40px;height:40px;border-radius:10px;background:var(--adc,var(--accent));color:#fff;font-family:var(--display);font-weight:800;font-size:.95rem;display:grid;place-items:center;letter-spacing:.02em}
 .ad .mk.pic{background:#fff;overflow:hidden}.ad .mk img{width:100%;height:100%;display:block}
 .ad.big .mk{width:52px;height:52px;border-radius:12px}
@@ -865,8 +875,20 @@ function buzz(ms){try{if(soundOn&&navigator.vibrate)navigator.vibrate(ms)}catch(
 
 // ---------- Turn timer ----------
 var clock={left:0,id:null};
+function kerText(pi){
+  var k=$("ker-"+pi);if(!k)return;
+  var on=clock.id!==null&&g&&pi===g.turn,sm=k.firstChild,t=(k.dataset.info||"")+(on?(k.dataset.info?" · ":"")+Math.ceil(clock.left/10)+" s":"");
+  if(sm.textContent!==t)sm.textContent=t;
+}
 function drawClock(total){
   var on=clock.id!==null;
+  if(g)g.players.forEach(function(pl,pi){
+    var k=$("ker-"+pi);if(!k)return;
+    var mine=on&&pi===g.turn;
+    k.classList.toggle("clock",mine);k.classList.toggle("low",mine&&clock.left<=50);
+    k.lastChild.style.width=mine?(72*clock.left/total)+"%":"0";
+    kerText(pi);
+  });
   $("timer").className="timer"+(on?"":" off")+(on&&clock.left<=50?" low":"");
   $("tbar").style.width=on?(100*clock.left/total)+"%":"0%";
   $("tnum").textContent=on?Math.ceil(clock.left/10):"";
@@ -875,14 +897,16 @@ function stopClock(){if(clock.id!==null){clearInterval(clock.id);clock.id=null}d
 function startClock(){
   stopClock();
   var secs=g?turnSecs():0;
-  if(!secs||!isHuman(g.turn))return;
+  // on the other phones the countdown of the player whose turn it is is shown too (display only)
+  var mine=isHuman(g.turn),watch=!mine&&live()&&g.players[g.turn].kind==="human"&&control(g.turn)==="remote";
+  if(!secs||!(mine||watch))return;
   var total=secs*10,e=epoch;clock.left=total;
   clock.id=setInterval(function(){
     if(e!==epoch){stopClock();return}
     if(document.hidden||document.querySelector(".sheet.open"))return;
     clock.left--;
-    if(clock.left>0&&clock.left<=50&&clock.left%10===0)sfx("tick");
-    if(clock.left<=0){stopClock();timeUp();return}
+    if(mine&&clock.left>0&&clock.left<=50&&clock.left%10===0)sfx("tick");
+    if(clock.left<=0){stopClock();if(mine)timeUp();return}
     drawClock(total);
   },100);
   drawClock(total);
@@ -939,8 +963,11 @@ function startGame(){
 function mount(){
   drawBoard();
   var b=$("board");
-  Array.prototype.slice.call(b.querySelectorAll(".tok")).forEach(function(n){n.remove()});
+  Array.prototype.slice.call(b.querySelectorAll(".tok,.ker")).forEach(function(n){n.remove()});
   g.players.forEach(function(pl,pi){
+    var k=document.createElement("div"),sx=(pl.seat===0||pl.seat===3)?0:60,sy=pl.seat<2?0:60;
+    k.className="ker"+(pl.seat===2?" dark":"");k.id="ker-"+pi;k.style.left=sx+"%";k.style.top=sy+"%";
+    k.innerHTML="<small></small><i></i>";b.appendChild(k);
     for(var t=0;t<4;t++){
       var el=document.createElement("button");
       el.type="button";el.className="tok";el.id="tok-"+pi+"-"+t;el.tabIndex=-1;
@@ -1085,6 +1112,14 @@ function renderChips(){
     h+='<div class="chip'+(pi===g.turn&&phase!=="over"?" on":"")+'"><b><i style="background:'+CSSC[pl.seat]+'"></i>'+esc(pl.name)+'</b><small>'+(g.rank.indexOf(pi)>=0?"#"+(g.rank.indexOf(pi)+1)+" · "+(pl.key?fmt(pr?pr.pts:0):tagOf(pl)):(pl.key?"★ "+fmt(pr?pr.pts:0):tagOf(pl)))+'</small></div>';
   });
   $("chips").innerHTML=h;
+  g.players.forEach(function(pl,pi){
+    var k=$("ker-"+pi);if(!k)return;
+    var pr=pl.key&&bank.profiles[pl.key],out=g.out&&g.out.indexOf(pi)>=0,turn=pi===g.turn&&phase!=="over"&&!out;
+    k.classList.toggle("on",turn);
+    if(!turn)k.classList.remove("clock","low");
+    k.dataset.info=out?L().outTag:(pl.key?"★ "+fmt(pr?pr.pts:0):tagOf(pl));
+    kerText(pi);
+  });
   $("pot").textContent=(live()?L().roomLine(net.code)+" · ":"")+(g.pot?(g.players.length>2?L().potSplit(fmt(g.pot)):L().pot(fmt(g.pot))):L().friendly);
 }
 function renderTokens(){
@@ -1188,6 +1223,7 @@ function step(){
   var who=control(g.turn);
   if(who!=="me"){
     say(L().thinking(nameOf(g.turn)));
+    if(who==="remote")startClock();
     if(who==="cpu")later(function(){if(sn!==stepNo)return;var m=chooseMove(g);if(m)doMove(m.ti,m.di)},450);
     pumpEvents();return;
   }
@@ -2341,7 +2377,7 @@ function boot(data){
 setTimeout(dailyBonus,1500);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)dailyBonus()});
 // ---------- Updates: tell the player when a newer version of the game is online ----------
-var BUILD="26";
+var BUILD="27";
 function checkUpdate(){
   if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
   fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){
