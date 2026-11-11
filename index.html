@@ -334,7 +334,7 @@ function applyMove(g,pi,ti,die){
   if(g.opts.homeBonus&&pl.tokens[ti]===56)g.bonus=true; // a piece safely home earns another roll
   if(g.rank.indexOf(pi)<0&&pl.tokens.every(function(q){return q===56})){
     g.rank.push(pi);if(g.winner<0)g.winner=pi;
-    if(g.rank.length>=g.players.length-1)g.over=true;
+    if(g.rank.length+(g.out||[]).length>=g.players.length-1){g.over=true;lastStanding(g)}
   }
   return {from:from,to:np,captured:captured};
 }
@@ -349,9 +349,42 @@ function endRoll(g){
   var r=g.rolled||[],again=g.bonus||(g.opts.twoDice?(r[0]===6&&r[1]===6):r[0]===6);
   g.dice=[];g.rolled=null;g.bonus=false;
   if(g.over)return false;
-  if(g.rank.indexOf(g.turn)>=0)again=false;
-  if(!again){do{g.turn=(g.turn+1)%g.players.length}while(g.rank.indexOf(g.turn)>=0)}
+  var out=g.out||[];
+  if(g.rank.indexOf(g.turn)>=0||out.indexOf(g.turn)>=0)again=false;
+  if(!again){do{g.turn=(g.turn+1)%g.players.length}while(g.rank.indexOf(g.turn)>=0||out.indexOf(g.turn)>=0)}
   return again;
+}
+// Takes a player out of the game: their pieces leave the board and anyone held in their kër goes home.
+function kickPlayer(g,pi){
+  g.out=g.out||[];
+  if(g.over||g.out.indexOf(pi)>=0||g.rank.indexOf(pi)>=0)return false;
+  g.out.push(pi);
+  g.players[pi].tokens=g.players[pi].tokens.map(function(){return -1});
+  g.players.forEach(function(op,oi){if(oi!==pi)op.tokens.forEach(function(q,k){if(q===-(10+pi))op.tokens[k]=-1})});
+  var act=0;g.players.forEach(function(p,i){if(g.rank.indexOf(i)<0&&g.out.indexOf(i)<0)act++});
+  if(act<=1){g.over=true;lastStanding(g)}
+  return true;
+}
+// When players were removed, the one player still in the game at the end takes the next place.
+function lastStanding(g){
+  var out=g.out||[],act=[];
+  if(!out.length)return;
+  g.players.forEach(function(p,i){if(g.rank.indexOf(i)<0&&out.indexOf(i)<0)act.push(i)});
+  if(act.length===1){g.rank.push(act[0]);if(g.winner<0)g.winner=act[0]}
+}
+// A human player who misses three turns in a row (skipped, or played for because they were away) is out.
+var KICK_AFTER=3;
+function missStep(g,e){
+  var pi=g.turn,pl=g.players[pi];
+  g.miss=g.miss||[0,0,0,0];
+  if(g.mflag!==undefined&&g.mflag!==null&&g.mflag!==pi)g.mflag=null;
+  if(pl.kind!=="human")return false;
+  if(e.t==="x"){g.miss[pi]++;g.mflag=null}
+  else if(e.t==="r"){
+    if(e.a){if(g.mflag!==pi){g.miss[pi]++;g.mflag=pi}}
+    else{g.miss[pi]=0;g.mflag=null}
+  }else return false;
+  return g.miss[pi]>=KICK_AFTER?kickPlayer(g,pi):false;
 }
 function threat(g,pi,idx){
   if(isSafe(g,idx))return 0;
@@ -591,6 +624,10 @@ var IT={sub:"Regole di casa dell'Africa occidentale",roll:"Tira",newGame:"Nuova 
 T.it=Object.assign({},T.en,IT);T.it.r=Object.assign({},T.en.r,IT.r);
 T.en.closesIn=function(n){return "This room closes in "+n+" s"};T.fr.closesIn=function(n){return "Ce salon ferme dans "+n+" s"};T.it.closesIn=function(n){return "Questa stanza chiude tra "+n+" s"};
 T.en.roomClosed="This room is closed. Start a new game to play again.";T.fr.roomClosed="Ce salon est fermé. Lancez une nouvelle partie pour rejouer.";T.it.roomClosed="Questa stanza è chiusa. Avvia una nuova partita per giocare ancora.";
+T.en.kicked=function(n){return n+" was removed for not playing."};T.fr.kicked=function(n){return n+" a été exclu pour abandon."};T.it.kicked=function(n){return n+" è stato escluso per abbandono."};
+T.en.youOut="You were removed from this game for not playing.";T.fr.youOut="Vous avez été exclu de cette partie pour abandon.";T.it.youOut="Sei stato escluso da questa partita per abbandono.";
+T.en.missWarn="Play your turn: one more miss and you are out of the game.";T.fr.missWarn="Jouez votre tour : encore un oubli et vous êtes exclu de la partie.";T.it.missWarn="Gioca il tuo turno: ancora una mancanza e sei escluso dalla partita.";
+T.en.outTag="removed";T.fr.outTag="exclu";T.it.outTag="escluso";
 T.en.daily=function(n){return "Daily bonus: +"+n+" ★"};T.fr.daily=function(n){return "Bonus du jour : +"+n+" ★"};T.it.daily=function(n){return "Bonus del giorno: +"+n+" ★"};
 T.en.streak=function(k,n){return "🔥 "+k+" wins in a row: +"+n+" ★"};T.fr.streak=function(k,n){return "🔥 "+k+" victoires de suite : +"+n+" ★"};T.it.streak=function(k,n){return "🔥 "+k+" vittorie di fila: +"+n+" ★"};
 T.en.gift=function(f,n){return "🎁 "+f+" sent you +"+n+" ★"};T.fr.gift=function(f,n){return "🎁 "+f+" vous a envoyé +"+n+" ★"};T.it.gift=function(f,n){return "🎁 "+f+" ti ha inviato +"+n+" ★"};
@@ -636,10 +673,16 @@ function saveLocal(){try{localStorage.setItem("ludo-bank",JSON.stringify(bank))}
 function saveBank(){saveLocal();if(typeof pushAcct==="function")pushAcct();if(typeof sharePts==="function")sharePts()}
 var BONUS=[100,50,25,0];
 function potShare(place,n,pot){if(n===2)return place===1?pot:0;var a=Math.round(pot*0.7);return place===1?a:place===2?pot-a:0}
+// Pays anyone who earned a place without moving a piece home last (the others were removed).
+function settle(){
+  g.paid=g.paid||{};
+  g.rank.forEach(function(pi,i){if(g.paid[pi])return;g.paid[pi]=1;g.gains[pi]=award(pi,potShare(i+1,g.players.length,g.pot)+(BONUS[i]||0))});
+}
 function stat(pi,k,n){var pl=g.players[pi],pr=pl.key&&bank.profiles[pl.key];if(pr&&n){pr[k]=(pr[k]||0)+n;pr.t=Date.now()}}
 function recordGame(){
-  var order=g.rank.slice();
-  g.players.forEach(function(pl,pi){if(order.indexOf(pi)<0)order.push(pi)});
+  var order=g.rank.slice(),outs=(g.out||[]).slice().reverse();
+  g.players.forEach(function(pl,pi){if(order.indexOf(pi)<0&&outs.indexOf(pi)<0)order.push(pi)});
+  outs.forEach(function(pi){if(order.indexOf(pi)<0)order.push(pi)});
   g.order=order;
   order.forEach(function(pi,i){
     var pl=g.players[pi],pr=pl.key&&bank.profiles[pl.key];if(!pr)return;
@@ -842,6 +885,11 @@ function timeUp(remote){
     if(auto){stopClock();sfx("timeup");say(L().autoMove(nameOf(g.turn)));doMove(auto.ti,auto.di);return}
   }
   if(live()&&!remote)pushEv({t:"x"});
+  if(live()){
+    var kp=g.turn;
+    if(missStep(g,{t:"x"})){kickFlow(kp);return}
+    if(!remote&&g.miss&&g.miss[kp]===KICK_AFTER-1)toast(L().missWarn);
+  }
   stopClock();
   sfx("timeup");say(L().timeUp(nameOf(g.turn)));
   phase="anim";g.dice=[];g.rolled=null;g.bonus=false;renderAll();later(finish,1000);
@@ -1001,6 +1049,7 @@ function renderDice(shakeVals){
   Array.prototype.slice.call(box.children).forEach(function(b){b.addEventListener("click",function(){onDie(parseInt(b.getAttribute("data-di"),10))})});
 }
 function tagOf(pl){
+  if(g.out&&g.out.indexOf(g.players.indexOf(pl))>=0)return L().outTag;
   if(!(live()&&pl.kind==="human"))return pl.kind==="human"?"":L().cpu;
   if(!fresh(pl.id))return L().awayTag;
   // an opponent's points, as shared by their own phone during this game
@@ -1033,6 +1082,7 @@ function renderTokens(){
   g.players.forEach(function(pl,pi){for(var t=0;t<4;t++){
     var el=$("tok-"+pi+"-"+t),on=pi===g.turn&&can.indexOf(t)>=0;
     el.classList.toggle("can",on);el.tabIndex=on?0:-1;
+    el.style.visibility=(g.out&&g.out.indexOf(pi)>=0)?"hidden":"";
     el.setAttribute("aria-label",pl.name+" "+(t+1));
   }});
 }
@@ -1089,7 +1139,12 @@ function doRoll(){
   if(live()&&control(g.turn)==="remote")return;
   var n=g.opts.twoDice?2:1,vals=[];
   for(var i=0;i<n;i++)vals.push(1+Math.floor(Math.random()*6));
-  if(live())pushEv({t:"r",d:vals});
+  if(live()){
+    var e={t:"r",d:vals},pi=g.turn,pl=g.players[pi];
+    if(pl.kind==="human"&&pl.id!==myId)e.a=1; // rolled for a player who is away
+    pushEv(e);
+    if(missStep(g,e)){kickFlow(pi);return}
+  }
   showRoll(vals);
 }
 function showRoll(vals){
@@ -1128,6 +1183,17 @@ function step(){
   else{say(g.opts.twoDice&&g.dice.length===2&&g.dice[0]!==g.dice[1]?L().pickDie:L().pick);startClock()}
 }
 var stepNo=0;
+// Shown on every phone when a player is taken out for not playing.
+function kickFlow(pi){
+  var mine=g.players[pi].id===myId;
+  stopClock();sfx("timeup");
+  say(L().kicked(nameOf(pi)));toast(mine?L().youOut:L().kicked(nameOf(pi)));
+  phase="anim";g.dice=[];g.rolled=null;g.bonus=false;renderAll();
+  later(function(){
+    if(g.over){settle();recordGame();phase="over";renderAll();showWin();return}
+    finish();
+  },1600);
+}
 function finish(){stepNo++;endRoll(g);beginTurn()}
 function onDie(di){
   if(phase==="roll"&&isHuman(g.turn)){doRoll();return}
@@ -1156,8 +1222,8 @@ async function doMove(ti,di,remote){
     var hit=res.captured[0].pi;
     if(g.players[hit].kind==="human"&&g.players[hit].id!==myId){aim=hit;clearTimeout(aimT);aimT=setTimeout(function(){aim=-1;renderReact()},15000);renderReact()}
   }
-  if(placed){g.gains[pi]=award(pi,potShare(rankNo,g.players.length,g.pot)+BONUS[rankNo-1]);gain+=g.gains[pi]}
-  if(g.over){recordGame();try{localStorage.removeItem("ludo-game3")}catch(x){}}
+  if(placed){g.paid=g.paid||{};g.paid[pi]=1;g.gains[pi]=award(pi,potShare(rankNo,g.players.length,g.pot)+BONUS[rankNo-1]);gain+=g.gains[pi]}
+  if(g.over){settle();recordGame();try{localStorage.removeItem("ludo-game3")}catch(x){}}
   renderTokens();renderDice();
   var freed=res.to===-1;
   if(!reduced&&!freed){
@@ -1190,7 +1256,7 @@ function api(method,path,body,code){
   return fetch(roomUrl(code||net.code,path),{method:method,headers:{"Content-Type":"application/json"},body:body===undefined?undefined:JSON.stringify(body)})
     .then(function(r){if(!r.ok)throw new Error("net");return r.json()});
 }
-var PROTO=2,rejoining=false;
+var PROTO=3,rejoining=false;
 // The agreed list of inputs, in order. Inputs are only ever added, never overwritten. Each one says which
 // position it was meant for; if two phones send an input for the same position, the first to arrive counts
 // and the other is ignored by everyone.
@@ -1214,7 +1280,7 @@ function evOk(gm,e){
   return e.t==="x";
 }
 function seatAt(r,i){return r&&r.seats?r.seats[i]:undefined}
-function canon(e){return e.t+"|"+(e.d?e.d.join(","):"")+"|"+(e.ti===undefined?"":e.ti)+"|"+(e.di===undefined?"":e.di)}
+function canon(e){return e.t+"|"+(e.d?e.d.join(","):"")+"|"+(e.ti===undefined?"":e.ti)+"|"+(e.di===undefined?"":e.di)+"|"+(e.a?1:"")}
 function fresh(id){return id===myId||Date.now()-(net.seen[id]||net.since)<25000}
 function actingHost(){
   var r=net.room,ss=(r.game&&r.game.seats)||[];
@@ -1268,6 +1334,7 @@ function sendNext(){
 // Applies one input to the game without any animation. Used to catch up after joining or reconnecting.
 function simEvent(gm,e){
   if(!evOk(gm,e))return;
+  if(e.t!=="m"&&missStep(gm,e)){gm.dice=[];gm.rolled=null;gm.bonus=false;endRoll(gm);return}
   if(e.t==="r"){gm.dice=e.d.slice();gm.rolled=e.d.slice();gm.bonus=false}
   else if(e.t==="m"){applyMove(gm,gm.turn,e.ti,gm.dice[e.di]);gm.dice.splice(e.di,1)}
   else{gm.dice=[];gm.rolled=null;gm.bonus=false;endRoll(gm);return}
@@ -1286,7 +1353,7 @@ function pumpEvents(){
   var e=seq[net.applied];
   net.log[net.applied]=canon(e);net.applied++;net.ok=net.applied;
   if(!evOk(g,e)){pumpEvents();return}
-  if(e.t==="r")showRoll(e.d);else if(e.t==="m")doMove(e.ti,e.di,true);else timeUp(true);
+  if(e.t==="r"){var kp=g.turn;if(missStep(g,e)){kickFlow(kp);return}showRoll(e.d)}else if(e.t==="m")doMove(e.ti,e.di,true);else timeUp(true);
 }
 function resync(force){
   if(!net)return;var n=net;
@@ -2160,7 +2227,7 @@ function showWin(){
   var t=L(),order=g.order||g.rank.concat(g.players.map(function(x,i){return i}).filter(function(i){return g.rank.indexOf(i)<0})),first=g.players[order[0]],h='<div class="dot" style="background:'+CSSC[first.seat]+'"></div><h2>'+esc(t.wins(first.name))+'</h2><ol class="places">';
   order.forEach(function(pi,i){
     var pl=g.players[pi];
-    h+='<li><em>'+t.ord[i]+'</em><i style="background:'+CSSC[pl.seat]+'"></i><b>'+esc(pl.name)+'</b><span>'+(pl.key?"+"+fmt(g.gains[pi]||0)+" ★":(pl.kind==="cpu"?t.cpu:""))+'</span></li>';
+    h+='<li><em>'+t.ord[i]+'</em><i style="background:'+CSSC[pl.seat]+'"></i><b>'+esc(pl.name)+'</b><span>'+((g.out||[]).indexOf(pi)>=0?t.outTag:pl.key?"+"+fmt(g.gains[pi]||0)+" ★":(pl.kind==="cpu"?t.cpu:""))+'</span></li>';
   });
   g.players.forEach(function(pl,pi){var sk=pl.key&&g.streaks&&g.streaks[pi];if(sk)h+='</ol><p class="streak">'+esc(t.streak(sk.k,fmt(sk.n)))+'</p><ol class="places" style="display:none">'});
   armClose();
@@ -2261,7 +2328,7 @@ function boot(data){
 setTimeout(dailyBonus,1500);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)dailyBonus()});
 // ---------- Updates: tell the player when a newer version of the game is online ----------
-var BUILD="24";
+var BUILD="25";
 function checkUpdate(){
   if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
   fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){
