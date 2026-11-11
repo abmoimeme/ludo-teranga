@@ -589,6 +589,8 @@ var IT={sub:"Regole di casa dell'Africa occidentale",roll:"Tira",newGame:"Nuova 
     pts:"Punti: +10 ★ per una cattura, +25 ★ per ogni pedina arrivata, +100 ★ per il 1º posto, +50 ★ per il 2º, +25 ★ per il 3º. In una partita a punti con 3 o 4 giocatori, il 1º prende il 70% del piatto e il 2º il 30%. In 2, chi vince prende tutto.",
     timer:function(n){return "Ogni giocatore ha "+n+" secondi per giocare. Se il tempo scade prima del tiro, il turno passa. Se scade dopo il tiro, il gioco muove una pedina per te."}}};
 T.it=Object.assign({},T.en,IT);T.it.r=Object.assign({},T.en.r,IT.r);
+T.en.closesIn=function(n){return "This room closes in "+n+" s"};T.fr.closesIn=function(n){return "Ce salon ferme dans "+n+" s"};T.it.closesIn=function(n){return "Questa stanza chiude tra "+n+" s"};
+T.en.roomClosed="This room is closed. Start a new game to play again.";T.fr.roomClosed="Ce salon est fermé. Lancez une nouvelle partie pour rejouer.";T.it.roomClosed="Questa stanza è chiusa. Avvia una nuova partita per giocare ancora.";
 T.en.daily=function(n){return "Daily bonus: +"+n+" ★"};T.fr.daily=function(n){return "Bonus du jour : +"+n+" ★"};T.it.daily=function(n){return "Bonus del giorno: +"+n+" ★"};
 T.en.streak=function(k,n){return "🔥 "+k+" wins in a row: +"+n+" ★"};T.fr.streak=function(k,n){return "🔥 "+k+" victoires de suite : +"+n+" ★"};T.it.streak=function(k,n){return "🔥 "+k+" vittorie di fila: +"+n+" ★"};
 T.en.gift=function(f,n){return "🎁 "+f+" sent you +"+n+" ★"};T.fr.gift=function(f,n){return "🎁 "+f+" vous a envoyé +"+n+" ★"};T.it.gift=function(f,n){return "🎁 "+f+" ti ha inviato +"+n+" ★"};
@@ -999,7 +1001,7 @@ function renderDice(shakeVals){
   Array.prototype.slice.call(box.children).forEach(function(b){b.addEventListener("click",function(){onDie(parseInt(b.getAttribute("data-di"),10))})});
 }
 function tagOf(pl){
-  if(!(live()&&pl.kind==="human"))return L().cpu;
+  if(!(live()&&pl.kind==="human"))return pl.kind==="human"?"":L().cpu;
   if(!fresh(pl.id))return L().awayTag;
   // an opponent's points, as shared by their own phone during this game
   var v=net.room.pts&&net.room.pts[pl.id];
@@ -1372,6 +1374,7 @@ function hasMe(r){
 }
 function onRoom(){
   var r=net.room;
+  if((!r||!r.cfg)&&net.live&&g&&g.over){roomClosed();return}
   if(!r||!r.cfg){onErr=L().errNoRoom;leaveRoom();openOnline();return}
   var nx=nextOf(r,net.code);
   if(nx){leaveRoom(true);joinTries=0;rejoining=true;joinRoom(nx);return}
@@ -1482,12 +1485,36 @@ function rematch(){
     .then(function(){return api("PATCH","",{next:code},old)})
     .catch(function(){say(L().errNet)});
 }
+// When a game is over its room stays open for 30 seconds (time to tap "Play again"), then closes for everyone.
+var CLOSE_MS=30000,closeTick=null;
+function armClose(){
+  if(!live()||!g.over)return;
+  if(!net.closeAt){
+    net.closeAt=Date.now()+CLOSE_MS;
+    var code=net.code;
+    // the finished room is removed from the database even if this phone has already moved to the next game
+    setTimeout(function(){fetch(roomUrl(code,""),{method:"DELETE"}).catch(function(){})},CLOSE_MS);
+  }
+  clearInterval(closeTick);
+  closeTick=setInterval(function(){
+    if(!net||!net.closeAt){clearInterval(closeTick);return}
+    var left=Math.ceil((net.closeAt-Date.now())/1000),el=$("close-in");
+    if(left<=0){roomClosed();return}
+    if(el)el.textContent=L().closesIn(left);
+  },500);
+}
+function roomClosed(){
+  clearInterval(closeTick);
+  if(!net)return;
+  leaveRoom(true);
+  if(g){g.closed=true;stopClock();if($("sheet-win").classList.contains("open"))showWin();renderAll()}
+}
 function nextOf(r,code){return r&&typeof r.next==="string"&&/^[A-Z0-9]{6}$/.test(r.next)&&r.next!==code?r.next:""}
 function leaveRoom(quiet){
   if(!net)return;
   var n=net;net=null;
   if(n.es)n.es.close();
-  clearInterval(n.beat);clearTimeout(n.autoT);
+  clearInterval(n.beat);clearTimeout(n.autoT);clearInterval(closeTick);
   try{localStorage.removeItem("ludo-room")}catch(e){}
   if(n.room&&n.room.status==="lobby"){
     for(var i=0;i<4;i++){var s=seatAt(n.room,i);if(s&&s.id===myId)fetch(roomUrl(n.code,"/seats/"+i),{method:"PUT",headers:{"Content-Type":"application/json"},body:"null"}).catch(function(){})}
@@ -2136,9 +2163,11 @@ function showWin(){
     h+='<li><em>'+t.ord[i]+'</em><i style="background:'+CSSC[pl.seat]+'"></i><b>'+esc(pl.name)+'</b><span>'+(pl.key?"+"+fmt(g.gains[pi]||0)+" ★":(pl.kind==="cpu"?t.cpu:""))+'</span></li>';
   });
   g.players.forEach(function(pl,pi){var sk=pl.key&&g.streaks&&g.streaks[pi];if(sk)h+='</ol><p class="streak">'+esc(t.streak(sk.k,fmt(sk.n)))+'</p><ol class="places" style="display:none">'});
-  h+='</ol>'+adCard()+(live()&&net.room.host!==myId?'<p class="note" style="margin:0">'+t.waitAgain+'</p>':'<button type="button" class="cta" id="again">'+t.again+'</button>')+'<button type="button" class="ghost" id="win-scores">'+t.scores+'</button><button type="button" class="ghost" id="win-setup">'+t.newGame+'</button>';
+  armClose();
+  h+='</ol>'+(live()&&net.closeAt?'<p class="note" id="close-in" style="margin:0">'+t.closesIn(Math.max(1,Math.ceil((net.closeAt-Date.now())/1000)))+'</p>':(g.closed?'<p class="note" style="margin:0">'+t.roomClosed+'</p>':''))+adCard()+(g.closed?'':live()&&net.room.host!==myId?'<p class="note" style="margin:0">'+t.waitAgain+'</p>':'<button type="button" class="cta" id="again">'+t.again+'</button>')+(g.closed?'<button type="button" class="cta" id="win-online">'+t.online+'</button>':'')+'<button type="button" class="ghost" id="win-scores">'+t.scores+'</button><button type="button" class="ghost" id="win-setup">'+t.newGame+'</button>';
   $("panel-win").innerHTML=h;
   if($("again"))$("again").addEventListener("click",function(){if(live())rematch();else{closeSheets();startGame()}});
+  if($("win-online"))$("win-online").addEventListener("click",function(){closeSheets();openOnline()});
   $("win-scores").addEventListener("click",function(){closeSheets();openScores()});
   $("win-setup").addEventListener("click",function(){closeSheets();renderSetup();$("sheet-setup").classList.add("open")});
   $("sheet-win").classList.add("open");say(t.wins(first.name));
@@ -2232,7 +2261,7 @@ function boot(data){
 setTimeout(dailyBonus,1500);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)dailyBonus()});
 // ---------- Updates: tell the player when a newer version of the game is online ----------
-var BUILD="22";
+var BUILD="23";
 function checkUpdate(){
   if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
   fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){
