@@ -137,6 +137,15 @@ h1 span{color:var(--accent)}
 .code small{display:block;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
 .code b{font-family:var(--display);font-size:2.2rem;letter-spacing:.14em;color:var(--accent);line-height:1.1;-webkit-user-select:all;user-select:all}
 #join-code{text-transform:uppercase;letter-spacing:.14em;font-family:var(--display);font-size:1.15rem}
+.ad{text-align:left;display:flex;align-items:center;gap:10px;background:var(--cloth-2);border-radius:14px;padding:8px 12px;min-height:68px;border-left:5px solid var(--adc,var(--accent))}
+.ad .mk{flex:none;width:40px;height:40px;border-radius:10px;background:var(--adc,var(--accent));color:#fff;font-family:var(--display);font-weight:800;font-size:.95rem;display:grid;place-items:center;letter-spacing:.02em}
+.ad .tx{flex:1;min-width:0;line-height:1.25}
+.ad b{display:block;font-family:var(--display);font-size:1rem}
+.ad span{display:block;font-size:.8rem;color:var(--muted)}
+.ad em{flex:none;align-self:flex-start;font-style:normal;font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.ad.big{flex-direction:column;align-items:flex-start;gap:6px;background:rgba(255,255,255,.06);padding:12px 14px;position:relative}
+.ad.big .row{display:flex;align-items:center;gap:10px;width:100%}
+.ad.big b{font-size:1.15rem}.ad.big span{font-size:.88rem;color:var(--ink)}.ad.big small{display:block;font-size:.78rem;color:var(--muted)}
 .foot{margin:6px 0 0;text-align:center;font-size:.72rem;color:var(--muted)}
 .actions button{flex:1 1 25%;min-width:0;background:none;border:1.5px solid var(--muted);border-radius:12px;padding:10px 4px;font-size:.86rem;font-weight:700;min-height:46px}
 
@@ -247,6 +256,7 @@ h1 span{color:var(--accent)}
     <button id="btn-scores" type="button"></button>
     <button id="btn-sound" type="button"></button>
   </div>
+  <div class="ad" id="ad" role="complementary"></div>
   <p class="foot">&copy; 2026 Nioro Resources LLC</p>
 </div>
 
@@ -967,7 +977,36 @@ function renderAll(){
   $("roll").textContent=L().roll;$("btn-new").textContent=L().newGame;$("btn-rules").textContent=L().rules;$("btn-online").textContent=L().online;$("btn-scores").textContent=L().scores;$("btn-sound").textContent=soundOn?L().soundOn:L().soundOff;$("btn-sound").setAttribute("aria-pressed",soundOn);$("sub").textContent=L().sub;
   LANGS.forEach(function(l){$("lang-"+l).setAttribute("aria-pressed",lang===l)});
   document.documentElement.lang=lang;
+  renderAd();
 }
+
+// ---------- Messages from our own companies (display only) ----------
+var ADS=[
+ {mk:"PAH",c:"#1f6fd0",name:"Planet Auto Hub",
+  en:["Car parts in Dakar","Toyota · Great Wall · Bosch · Bardahl","@planetautohub"],
+  fr:["Pièces auto à Dakar","Toyota · Great Wall · Bosch · Bardahl","@planetautohub"],
+  it:["Ricambi auto a Dakar","Toyota · Great Wall · Bosch · Bardahl","@planetautohub"]},
+ {mk:"NF",c:"#2f9e58",name:"Nioro Farms",
+  en:["From the motherland to your shelves","Hibiscus · Baobab · Tamarind · Mango · Cashews · Moringa","niorofarms.com"],
+  fr:["De la terre mère à vos rayons","Bissap · Baobab · Tamarin · Mangue · Cajou · Moringa","niorofarms.com"],
+  it:["Dalla terra madre ai vostri scaffali","Ibisco · Baobab · Tamarindo · Mango · Anacardi · Moringa","niorofarms.com"]},
+ {mk:"JV",c:"#d9731a",name:"Jollof Ventures",
+  en:["Connecting African and diaspora investors with technology","Intelligence · Network · Capital","invest@jollofventures.com"],
+  fr:["Relier les investisseurs d'Afrique et de la diaspora à la tech","Intelligence · Réseau · Capital","invest@jollofventures.com"],
+  it:["Investitori africani e della diaspora incontrano la tecnologia","Intelligence · Rete · Capitale","invest@jollofventures.com"]}
+];
+var adIdx=Math.floor(Math.random()*ADS.length),AD_TAG={en:"Sponsor",fr:"Partenaire",it:"Sponsor"};
+function adText(a){return a[lang]||a.en}
+function renderAd(){
+  var a=ADS[adIdx%ADS.length],el=$("ad");if(!el)return;
+  el.style.setProperty("--adc",a.c);
+  el.innerHTML='<div class="mk">'+a.mk+'</div><div class="tx"><b>'+esc(a.name)+'</b><span>'+esc(adText(a)[0])+'</span></div><em>'+AD_TAG[lang]+'</em>';
+}
+function adCard(){
+  var a=ADS[(adIdx+1)%ADS.length],x=adText(a);
+  return '<div class="ad big" style="--adc:'+a.c+'"><div class="row"><div class="mk">'+a.mk+'</div><div class="tx"><b>'+esc(a.name)+'</b></div><em>'+AD_TAG[lang]+'</em></div><span>'+esc(x[0])+'</span><small>'+esc(x[1])+'<br>'+esc(x[2])+'</small></div>';
+}
+setInterval(function(){if(document.hidden)return;adIdx=(adIdx+1)%ADS.length;renderAd()},10000);
 
 // ---------- Turn flow ----------
 function rollMsg(){return isHuman(g.turn)?L().yourRoll(nameOf(g.turn)):L().roll1(nameOf(g.turn))}
@@ -1944,7 +1983,7 @@ function showWin(){
     var pl=g.players[pi];
     h+='<li><em>'+t.ord[i]+'</em><i style="background:'+CSSC[pl.seat]+'"></i><b>'+esc(pl.name)+'</b><span>'+(pl.key?"+"+fmt(g.gains[pi]||0)+" ★":(pl.kind==="cpu"?t.cpu:""))+'</span></li>';
   });
-  h+='</ol>'+(live()&&net.room.host!==myId?'<p class="note" style="margin:0">'+t.waitAgain+'</p>':'<button type="button" class="cta" id="again">'+t.again+'</button>')+'<button type="button" class="ghost" id="win-scores">'+t.scores+'</button><button type="button" class="ghost" id="win-setup">'+t.newGame+'</button>';
+  h+='</ol>'+adCard()+(live()&&net.room.host!==myId?'<p class="note" style="margin:0">'+t.waitAgain+'</p>':'<button type="button" class="cta" id="again">'+t.again+'</button>')+'<button type="button" class="ghost" id="win-scores">'+t.scores+'</button><button type="button" class="ghost" id="win-setup">'+t.newGame+'</button>';
   $("panel-win").innerHTML=h;
   if($("again"))$("again").addEventListener("click",function(){if(live())rematch();else{closeSheets();startGame()}});
   $("win-scores").addEventListener("click",function(){closeSheets();openScores()});
@@ -2036,7 +2075,7 @@ function boot(data){
   }
 }
 // ---------- Updates: tell the player when a newer version of the game is online ----------
-var BUILD="17";
+var BUILD="18";
 function checkUpdate(){
   if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
   fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){
