@@ -1834,7 +1834,7 @@ function myPi(){if(!g)return -1;for(var i=0;i<g.players.length;i++)if(g.players[
 function others(){var me=myPi(),r=[];g.players.forEach(function(p,i){if(i!==me&&p.kind==="human")r.push(i)});return r}
 function renderReact(){
   var bar=$("react");
-  if(!live()||myPi()<0||!others().length){bar.hidden=true;return}
+  if(!live()||myPi()<0){bar.hidden=true;return}
   bar.hidden=false;
   if(aim>=0&&others().indexOf(aim)<0)aim=-1;
   var t=L(),h='<button type="button" class="to'+(aim>=0?" aim":"")+'" id="react-to">'+esc(aim>=0?t.toOne(g.players[aim].name):t.toAll)+'</button>';
@@ -2261,7 +2261,7 @@ function boot(data){
 setTimeout(dailyBonus,1500);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)dailyBonus()});
 // ---------- Updates: tell the player when a newer version of the game is online ----------
-var BUILD="23";
+var BUILD="24";
 function checkUpdate(){
   if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
   fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){
