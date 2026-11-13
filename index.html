@@ -7,6 +7,7 @@
 <meta name="description" content="Ludo Teranga: the classic Ludo board game with West African house rules. Play with family and friends on one phone, earn points and climb the leaderboard.">
 <meta name="author" content="Nioro Resources LLC">
 <meta name="theme-color" content="#121938">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <meta property="og:title" content="Ludo Teranga">
 <meta property="og:description" content="Classic Ludo with West African house rules. Pass one phone around, earn points, climb the leaderboard.">
 <meta property="og:type" content="website">
@@ -91,6 +92,8 @@ h1 span{color:var(--accent);display:block}
 .ker.on{box-shadow:inset 0 0 0 3px #fff,inset 0 0 14px 5px rgba(255,255,255,.75);animation:kerglow 1.2s ease-in-out infinite}
 @keyframes kerglow{0%,100%{box-shadow:inset 0 0 0 3px #fff,inset 0 0 12px 4px rgba(255,255,255,.55)}50%{box-shadow:inset 0 0 0 4px #fff,inset 0 0 26px 10px rgba(255,255,255,.95)}}
 @media (prefers-reduced-motion:reduce){.ker.on{animation:none}}
+.ker.mine{outline:3px solid var(--accent);outline-offset:-3px}
+.ker.mine::before{content:attr(data-you);position:absolute;left:3%;bottom:4%;font-size:.62rem;font-weight:800;letter-spacing:.03em;line-height:1.6;color:#1a1500;background:var(--accent);padding:0 6px;border-radius:99px;z-index:2}
 .tok{position:absolute;width:6.6667%;height:6.6667%;padding:0;border:0;background:none;transition:left .1s linear,top .1s linear;z-index:2;cursor:default}
 .tok.slow{transition:left .42s ease,top .42s ease}
 .tok span{position:absolute;inset:11%;border-radius:50%;border:2px solid #0b102a;transform:scale(var(--s,1));transition:transform .15s;
@@ -110,6 +113,9 @@ h1 span{color:var(--accent);display:block}
 @keyframes ready{0%,100%{box-shadow:0 0 0 0 rgba(240,191,0,.9)}50%{box-shadow:0 0 0 6px rgba(240,191,0,.15)}}
 .die.shake{animation:shake .12s linear infinite}
 @keyframes shake{0%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}100%{transform:rotate(-9deg)}}
+.dice-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.6);display:flex;gap:10px;z-index:5;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;filter:drop-shadow(0 8px 18px rgba(0,0,0,.5))}
+.dice-center.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.dice-center .die{width:clamp(44px,15vw,72px);height:clamp(44px,15vw,72px);padding:6px}
 .status{flex:1;min-width:0;font-weight:600;font-size:.95rem}
 .roll{flex:none;font-family:var(--display);font-weight:800;font-size:1.2rem;background:var(--accent);color:#1a1500;border:0;border-radius:14px;padding:6px 20px;min-height:54px;box-shadow:0 4px 0 #9a7a00}
 .roll:active{transform:translateY(2px);box-shadow:0 2px 0 #9a7a00}
@@ -195,6 +201,13 @@ h1 span{color:var(--accent);display:block}
 
 .sheet{position:fixed;inset:0;background:rgba(6,9,26,.78);display:none;align-items:flex-end;justify-content:center;z-index:20}
 .sheet.open{display:flex}
+.sheet.gate{z-index:50;align-items:center}
+.sheet.gate .panel{border-radius:20px;text-align:center;max-width:380px;margin:16px;padding-top:0;gap:10px}
+.gate-hero{width:calc(100% + 32px);margin:0 -16px;display:block;border-radius:20px 20px 0 0;aspect-ratio:1/1;object-fit:cover;background:var(--cloth)}
+.gate-tag{display:inline-block;background:var(--accent);color:#1a1500;font-weight:800;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;border-radius:999px;padding:4px 10px;margin:2px auto 0}
+.gate-spons-label{display:block;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:6px}
+.gate-spons{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:4px 0}
+.gate-spons img{width:30px;height:30px;border-radius:9px;object-fit:cover;background:var(--cloth)}
 #toast{position:fixed;left:50%;top:14px;transform:translate(-50%,-140%);z-index:40;max-width:92%;background:#fff;color:#161c3d;font-weight:700;font-size:.95rem;border-radius:14px;padding:10px 16px;box-shadow:0 8px 24px rgba(0,0,0,.5);transition:transform .35s ease,opacity .2s linear;text-align:center;pointer-events:none;opacity:0;visibility:hidden}
 #toast.on{transform:translate(-50%,0);opacity:1;visibility:visible}
 .streak{margin:0;text-align:center;font-weight:700;color:var(--accent)}
@@ -269,6 +282,9 @@ h1 span{color:var(--accent);display:block}
 .panel ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
 .cta{font-family:var(--display);font-weight:800;font-size:1.15rem;background:var(--accent);color:#1a1500;border:0;border-radius:14px;min-height:52px}
 .ghost{background:none;border:1.5px solid var(--muted);border-radius:14px;min-height:48px;font-weight:700}
+.or-div{display:flex;align-items:center;gap:10px;margin:10px 0;color:var(--muted);font-size:.85rem}
+.or-div::before,.or-div::after{content:"";flex:1;height:1px;background:var(--muted);opacity:.4}
+.g-wrap{min-height:48px}
 .win{align-items:center}
 .win .panel{border-radius:20px;text-align:center;max-width:340px;margin:16px}
 .win .dot{width:64px;height:64px;border-radius:50%;margin:0 auto;border:4px solid #fff}
@@ -294,7 +310,7 @@ h1 span{color:var(--accent);display:block}
   <div class="chips" id="chips"></div>
   <div class="pot" id="pot"></div>
 
-  <div class="board" id="board"><svg id="svg" viewBox="0 0 15 15" aria-hidden="true"></svg></div>
+  <div class="board" id="board"><svg id="svg" viewBox="0 0 15 15" aria-hidden="true"></svg><div class="dice-center" id="dice-center" aria-hidden="true"></div></div>
 
   <div class="react" id="react" hidden></div>
 
@@ -313,6 +329,7 @@ h1 span{color:var(--accent);display:block}
     <button id="btn-rules" type="button"></button>
     <button id="btn-scores" type="button"></button>
     <button id="btn-sound" type="button"></button>
+    <button id="btn-settings" type="button" aria-label="Settings">⚙️</button>
   </div>
   <div class="langrow">
     <div class="lang" role="group" aria-label="Language">
@@ -334,6 +351,7 @@ h1 span{color:var(--accent);display:block}
 <div class="sheet" id="sheet-chat"><div class="panel" id="panel-chat"></div></div>
 <div class="sheet" id="sheet-scores"><div class="panel" id="panel-scores"></div></div>
 <div class="sheet" id="sheet-owner"><div class="panel" id="panel-owner"></div></div>
+<div class="sheet gate" id="sheet-gate"><div class="panel" id="panel-gate"></div></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <div class="sheet win" id="sheet-win"><div class="panel" id="panel-win"></div></div>
 
@@ -566,7 +584,7 @@ en:{sub:"West African house rules",roll:"Roll",newGame:"New game",rules:"Rules",
   updateReady:"A newer version of the game is ready.",updateGo:"Update",
   toAll:"→ All",toOne:function(n){return "→ "+n},you:"you",everyone:"Everyone",chatTitle:"Say something",chatTo:"Who sees it",chatPh:"Short message",send:"Send",
   phrases:["Got you!","Nice move!","Hurry up!","Good game!","Wait for me!","Thank you!","Bad luck!","I'm coming for you!"],
-  friends:"Friends",yourCode:"Your friend code:",share:"Share",addFriend:"Add",fcPh:"Friend code",remove:"Remove",addF:"+ Friend",
+  friends:"Friends",yourCode:"Your friend code:",share:"Share",addFriend:"Add",fcPh:"Friend code or @username",remove:"Remove",addF:"+ Friend",
   noFriends:"No friends yet. Share your code, type a friend's code here, or tap + Friend next to someone you play with.",
   inviteFriends:"Invite a friend",inviteBtn:"Invite",invitedOk:"Invited",invFrom:function(n){return n+" invites you to a game"},notNow:"Not now",
   errFc:"A friend code has 8 letters and numbers. Check it and try again.",errRules:"Friends are not switched on yet. The new database rules still need to be published in Firebase.",errSelf:"That is your own code.",shareFc:function(c){return "Add me on Ludo Teranga. My friend code: "+c},
@@ -576,6 +594,7 @@ en:{sub:"West African house rules",roll:"Roll",newGame:"New game",rules:"Rules",
   startOnline:"Start game",waitHost:"Waiting for the host to start…",leave:"Leave game",waitAgain:"Waiting for the host to start the next game…",
   rejoinTitle:"Getting you back into your game…",rejoinNote:"Reconnecting. Your seat and your pieces are kept.",rejoinStop:"Stop and play on this phone",errOld:"This game needs the newest version. Close the game completely and open it again.",
   acctTitle:"Your account",phCc:"Country",phPh:"Phone number",signIn:"Sign in with my number",signOut:"Sign out",
+  tabPlay:"Play with friends",tabSettings:"Settings",blockedTitle:"Blocked players",blockedNone:"No blocked players.",blockedWho:"A player",unblock:"Unblock",prefsTitle:"Preferences",
   acctNote:"Your phone number is your login on any phone or computer. It brings back your name, points and friends. It is never shown to other players.",
   signedIn:function(h){return "Signed in · number ending "+h},welcomeBack:function(n){return "Welcome back, "+n+". Your points and friends are here."},acctMade:"Account created. Use the same number on any device.",
   errPhone:"That phone number does not look right. Choose your country and type the number.",errLogin:"Sign in with your phone number first.",
@@ -628,7 +647,7 @@ fr:{sub:"Règles de la maison, façon Afrique de l'Ouest",roll:"Lancer",newGame:
   updateReady:"Une nouvelle version du jeu est prête.",updateGo:"Mettre à jour",
   toAll:"→ Tous",toOne:function(n){return "→ "+n},you:"vous",everyone:"Tout le monde",chatTitle:"Dire quelque chose",chatTo:"Qui le voit",chatPh:"Message court",send:"Envoyer",
   phrases:["Je t'ai eu !","Beau coup !","Dépêche-toi !","Belle partie !","Attends-moi !","Merci !","Pas de chance !","J'arrive pour toi !"],
-  friends:"Amis",yourCode:"Votre code ami :",share:"Partager",addFriend:"Ajouter",fcPh:"Code ami",remove:"Retirer",addF:"+ Ami",
+  friends:"Amis",yourCode:"Votre code ami :",share:"Partager",addFriend:"Ajouter",fcPh:"Code ami ou @pseudo",remove:"Retirer",addF:"+ Ami",
   noFriends:"Pas encore d'amis. Partagez votre code, tapez le code d'un ami ici, ou touchez + Ami à côté d'un joueur.",
   inviteFriends:"Inviter un ami",inviteBtn:"Inviter",invitedOk:"Invité",invFrom:function(n){return n+" vous invite à une partie"},notNow:"Plus tard",
   errFc:"Un code ami a 8 lettres et chiffres. Vérifiez-le et réessayez.",errRules:"Les amis ne sont pas encore activés. Les nouvelles règles de la base doivent être publiées dans Firebase.",errSelf:"C'est votre propre code.",shareFc:function(c){return "Ajoute-moi sur Ludo Teranga. Mon code ami : "+c},
@@ -638,6 +657,7 @@ fr:{sub:"Règles de la maison, façon Afrique de l'Ouest",roll:"Lancer",newGame:
   startOnline:"Commencer",waitHost:"En attente de l'hôte…",leave:"Quitter la partie",waitAgain:"En attente de l'hôte pour la prochaine partie…",
   rejoinTitle:"Retour dans votre partie…",rejoinNote:"Reconnexion en cours. Votre siège et vos pions sont gardés.",rejoinStop:"Arrêter et jouer sur ce téléphone",errOld:"Cette partie demande la dernière version. Fermez complètement le jeu puis rouvrez-le.",
   acctTitle:"Votre compte",phCc:"Pays",phPh:"Numéro de téléphone",signIn:"Me connecter avec mon numéro",signOut:"Se déconnecter",
+  tabPlay:"Jouer avec des amis",tabSettings:"Réglages",blockedTitle:"Joueurs bloqués",blockedNone:"Aucun joueur bloqué.",blockedWho:"Un joueur",unblock:"Débloquer",prefsTitle:"Préférences",
   acctNote:"Votre numéro de téléphone est votre identifiant sur n'importe quel téléphone ou ordinateur. Il retrouve votre nom, vos points et vos amis. Les autres joueurs ne le voient jamais.",
   signedIn:function(h){return "Connecté · numéro finissant par "+h},welcomeBack:function(n){return "Bon retour, "+n+". Vos points et vos amis sont là."},acctMade:"Compte créé. Utilisez le même numéro sur tous vos appareils.",
   errPhone:"Ce numéro ne semble pas correct. Choisissez votre pays et écrivez le numéro.",errLogin:"Connectez-vous d'abord avec votre numéro de téléphone.",
@@ -695,7 +715,7 @@ var IT={sub:"Regole di casa dell'Africa occidentale",roll:"Tira",newGame:"Nuova 
   updateReady:"È pronta una nuova versione del gioco.",updateGo:"Aggiorna",
   toAll:"→ Tutti",toOne:function(n){return "→ "+n},you:"te",everyone:"Tutti",chatTitle:"Di' qualcosa",chatTo:"Chi lo vede",chatPh:"Messaggio breve",send:"Invia",
   phrases:["Ti ho preso!","Bella mossa!","Sbrigati!","Bella partita!","Aspettami!","Grazie!","Che sfortuna!","Sto arrivando!"],
-  friends:"Amici",yourCode:"Il tuo codice amico:",share:"Condividi",addFriend:"Aggiungi",fcPh:"Codice amico",remove:"Rimuovi",addF:"+ Amico",
+  friends:"Amici",yourCode:"Il tuo codice amico:",share:"Condividi",addFriend:"Aggiungi",fcPh:"Codice amico o @nomeutente",remove:"Rimuovi",addF:"+ Amico",
   noFriends:"Ancora nessun amico. Condividi il tuo codice, scrivi qui il codice di un amico, o tocca + Amico accanto a chi gioca con te.",
   inviteFriends:"Invita un amico",inviteBtn:"Invita",invitedOk:"Invitato",invFrom:function(n){return n+" ti invita a una partita"},notNow:"Non ora",
   errFc:"Un codice amico ha 8 lettere e numeri. Controllalo e riprova.",errRules:"Gli amici non sono ancora attivi. Le nuove regole del database devono essere pubblicate in Firebase.",errSelf:"Questo è il tuo codice.",
@@ -707,6 +727,7 @@ var IT={sub:"Regole di casa dell'Africa occidentale",roll:"Tira",newGame:"Nuova 
   rejoinTitle:"Ti riportiamo nella tua partita…",rejoinNote:"Riconnessione in corso. Il tuo posto e le tue pedine sono conservati.",rejoinStop:"Ferma e gioca su questo telefono",
   errOld:"Questa partita richiede l'ultima versione. Chiudi del tutto il gioco e riaprilo.",
   acctTitle:"Il tuo account",phCc:"Paese",phPh:"Numero di telefono",signIn:"Accedi con il mio numero",signOut:"Esci",
+  tabPlay:"Gioca con gli amici",tabSettings:"Impostazioni",blockedTitle:"Giocatori bloccati",blockedNone:"Nessun giocatore bloccato.",blockedWho:"Un giocatore",unblock:"Sblocca",prefsTitle:"Preferenze",
   acctNote:"Il tuo numero di telefono è il tuo accesso su qualsiasi telefono o computer. Ritrova il tuo nome, i tuoi punti e i tuoi amici. Gli altri giocatori non lo vedono mai.",
   signedIn:function(h){return "Accesso fatto · numero che finisce con "+h},welcomeBack:function(n){return "Bentornato, "+n+". I tuoi punti e i tuoi amici sono qui."},acctMade:"Account creato. Usa lo stesso numero su ogni dispositivo.",
   errPhone:"Questo numero non sembra corretto. Scegli il paese e scrivi il numero.",errLogin:"Accedi prima con il tuo numero di telefono.",
@@ -739,6 +760,11 @@ var IT={sub:"Regole di casa dell'Africa occidentale",roll:"Tira",newGame:"Nuova 
     pts:"Punti: +10 ★ per una cattura, +25 ★ per ogni pedina arrivata, +100 ★ per il 1º posto, +50 ★ per il 2º, +25 ★ per il 3º. In una partita a punti con 3 o 4 giocatori, il 1º prende il 70% del piatto e il 2º il 30%. In 2, chi vince prende tutto.",
     timer:function(n){return "Ogni giocatore ha "+n+" secondi per giocare. Se il tempo scade prima del tiro, il turno passa. Se scade dopo il tiro, il gioco muove una pedina per te."}}};
 T.it=Object.assign({},T.en,IT);T.it.r=Object.assign({},T.en.r,IT.r);
+T.en.gateTag="Free to play";T.fr.gateTag="Gratuit";T.it.gateTag="Gratis";
+T.en.gateTitle="Sign up to play Ludo Teranga";T.fr.gateTitle="Inscrivez-vous pour jouer à Ludo Teranga";T.it.gateTitle="Iscriviti per giocare a Ludo Teranga";
+T.en.gateSub="Create a free account to play against friends or the computer, the Senegalese way.";T.fr.gateSub="Créez un compte gratuit pour jouer entre amis ou contre l'ordinateur, à la sénégalaise.";T.it.gateSub="Crea un account gratuito per giocare con gli amici o contro il computer, alla senegalese.";
+T.en.gateCta="Sign in or create an account";T.fr.gateCta="Se connecter ou créer un compte";T.it.gateCta="Accedi o crea un account";
+T.en.gateWith="With our sponsors";T.fr.gateWith="Avec nos sponsors";T.it.gateWith="Con i nostri sponsor";
 T.en.closesIn=function(n){return "This room closes in "+n+" s"};T.fr.closesIn=function(n){return "Ce salon ferme dans "+n+" s"};T.it.closesIn=function(n){return "Questa stanza chiude tra "+n+" s"};
 T.en.roomClosed="This room is closed. Start a new game to play again.";T.fr.roomClosed="Ce salon est fermé. Lancez une nouvelle partie pour rejouer.";T.it.roomClosed="Questa stanza è chiusa. Avvia una nuova partita per giocare ancora.";
 T.en.kicked=function(n){return n+" was removed for not playing."};T.fr.kicked=function(n){return n+" a été exclu pour abandon."};T.it.kicked=function(n){return n+" è stato escluso per abbandono."};
@@ -772,11 +798,28 @@ T.en.emIn="Sign in";T.fr.emIn="Me connecter";T.it.emIn="Accedi";
 T.en.emNew="Create my login";T.fr.emNew="Créer mon compte";T.it.emNew="Crea il mio account";
 T.en.emForgot="Forgot your password?";T.fr.emForgot="Mot de passe oublié ?";T.it.emForgot="Password dimenticata?";
 T.en.acctNote2="Your email and password are your login on any phone or computer. They bring back your name, points and friends. Your email is never shown to other players.";T.fr.acctNote2="Votre e-mail et votre mot de passe sont votre identifiant sur n'importe quel téléphone ou ordinateur. Vous retrouvez votre nom, vos points et vos amis. Votre e-mail n'est jamais montré aux autres joueurs.";T.it.acctNote2="La tua e-mail e la tua password sono il tuo accesso su qualsiasi telefono o computer. Ritrovi il tuo nome, i tuoi punti e i tuoi amici. La tua e-mail non viene mai mostrata agli altri giocatori.";
+T.en.orWord="or";T.fr.orWord="ou";T.it.orWord="o";
+T.en.youTag="YOU";T.fr.youTag="VOUS";T.it.youTag="TU";
+T.en.googleFail="Google sign-in failed. Try again.";T.fr.googleFail="La connexion Google a échoué. Réessayez.";T.it.googleFail="Accesso Google non riuscito. Riprova.";
 T.en.signedInAs=function(h){return "Signed in · "+h};T.fr.signedInAs=function(h){return "Connecté · "+h};T.it.signedInAs=function(h){return "Connesso · "+h};
 T.en.acctMade2="Login created. Use the same email and password on any device.";T.fr.acctMade2="Compte créé. Utilisez le même e-mail et le même mot de passe sur tous vos appareils.";T.it.acctMade2="Account creato. Usa la stessa e-mail e la stessa password su tutti i dispositivi.";
 T.en.errLogin2="Sign in, or create your login, first.";T.fr.errLogin2="Connectez-vous d'abord, ou créez votre compte.";T.it.errLogin2="Prima accedi o crea il tuo account.";
 T.en.emInvalid="That email address does not look right.";T.fr.emInvalid="Cette adresse e-mail ne semble pas correcte.";T.it.emInvalid="Questo indirizzo e-mail non sembra corretto.";
+T.en.emNoEmail="Type your email first.";T.fr.emNoEmail="Entrez d'abord votre e-mail.";T.it.emNoEmail="Inserisci prima la tua e-mail.";
 T.en.emNoPw="Type your password.";T.fr.emNoPw="Tapez votre mot de passe.";T.it.emNoPw="Scrivi la tua password.";
+T.en.unameNeed="Pick a @username so friends can find and add you.";T.fr.unameNeed="Choisissez un @pseudo pour que vos amis puissent vous trouver.";T.it.unameNeed="Scegli un @nomeutente per farti trovare dagli amici.";
+T.en.unamePh="username";T.fr.unamePh="pseudo";T.it.unamePh="nomeutente";
+T.en.unameSet="Set";T.fr.unameSet="Valider";T.it.unameSet="Conferma";
+T.en.unameIs="Your username:";T.fr.unameIs="Votre pseudo :";T.it.unameIs="Il tuo nome utente:";
+T.en.unameChange="Change";T.fr.unameChange="Changer";T.it.unameChange="Cambia";
+T.en.unameWait=function(d){return "You can change it again in "+d+" day"+(d===1?"":"s")+"."};
+T.fr.unameWait=function(d){return "Vous pourrez le changer de nouveau dans "+d+" jour"+(d===1?"":"s")+"."};
+T.it.unameWait=function(d){return "Potrai cambiarlo di nuovo in "+d+" giorno"+(d===1?"":"i")+"."};
+T.en.unameBad="3 to 20 letters, numbers, \".\" or \"_\" only.";T.fr.unameBad="3 à 20 lettres, chiffres, « . » ou « _ » seulement.";T.it.unameBad="Da 3 a 20 lettere, numeri, \".\" o \"_\".";
+T.en.unameBad2="Please choose a different username.";T.fr.unameBad2="Choisissez un autre pseudo.";T.it.unameBad2="Scegli un altro nome utente.";
+T.en.unameTaken="That username is already taken.";T.fr.unameTaken="Ce pseudo est déjà pris.";T.it.unameTaken="Questo nome utente è già in uso.";
+T.en.unameFail="Could not save that right now. Try again.";T.fr.unameFail="Impossible d'enregistrer pour le moment. Réessayez.";T.it.unameFail="Impossibile salvare ora. Riprova.";
+T.en.errUname="Pick a @username first.";T.fr.errUname="Choisissez d'abord un @pseudo.";T.it.errUname="Scegli prima un @nomeutente.";
 T.en.emWeak="Choose a password of 8 characters or more.";T.fr.emWeak="Choisissez un mot de passe de 8 caractères ou plus.";T.it.emWeak="Scegli una password di almeno 8 caratteri.";
 T.en.emName="Type your name above first.";T.fr.emName="Écrivez d'abord votre nom ci-dessus.";T.it.emName="Scrivi prima il tuo nome qui sopra.";
 T.en.emExists="This email already has a login. Tap Sign in, or use Forgot your password.";T.fr.emExists="Cet e-mail a déjà un compte. Touchez Me connecter, ou Mot de passe oublié.";T.it.emExists="Questa e-mail ha già un account. Tocca Accedi, oppure Password dimenticata.";
@@ -943,12 +986,18 @@ var YARD=[[0,0],[0,9],[9,9],[9,0]];
 var SPOT=[[1.5,1.5],[1.5,3.5],[3.5,1.5],[3.5,3.5]];
 var COLS=[[[7,1],[7,2],[7,3],[7,4],[7,5]],[[1,7],[2,7],[3,7],[4,7],[5,7]],[[7,13],[7,12],[7,11],[7,10],[7,9]],[[13,7],[12,7],[11,7],[10,7],[9,7]]];
 var HOMEPOS=[[7,6.05],[6.05,7],[7,7.95],[7.95,7]];
+// In an online game, each phone draws the board turned so its own player always sits in the same
+// corner and color (seat 0 / red). This never touches the game rules: captures, blocks and doors
+// still run on the real, shared seat number everywhere above this line. Only drawing uses visSeat.
+function rotOf(){if(!live()||!g)return 0;var pi=myPi();return pi>=0?g.players[pi].seat:0}
+function visSeat(seat){return (seat-rotOf()+7)%4}
 function cellOf(seat,ti,p){
-  if(p===-1)return [YARD[seat][0]+SPOT[ti][0],YARD[seat][1]+SPOT[ti][1]];
-  if(p<=50)return PATH[absIdx(seat,p)];
-  if(p<=55)return COLS[seat][p-51];
-  var o=[-0.45,-0.15,0.15,0.45][ti],h=HOMEPOS[seat];
-  return seat%2===0?[h[0]+o,h[1]]:[h[0],h[1]+o];
+  var vs=visSeat(seat);
+  if(p===-1)return [YARD[vs][0]+SPOT[ti][0],YARD[vs][1]+SPOT[ti][1]];
+  if(p<=50)return PATH[absIdx(vs,p)];
+  if(p<=55)return COLS[vs][p-51];
+  var o=[-0.45,-0.15,0.15,0.45][ti],h=HOMEPOS[vs];
+  return vs%2===0?[h[0]+o,h[1]]:[h[0],h[1]+o];
 }
 
 // ---------- State ----------
@@ -1113,7 +1162,7 @@ function timeUp(remote){
   if(live()){
     var kp=g.turn;
     if(missStep(g,{t:"x"})){kickFlow(kp);return}
-    if(!remote&&!g.nokick&&g.miss&&g.miss[kp]===KICK_AFTER-1)toast(L().missWarn);
+    if(!remote&&!g.nokick&&g.miss&&g.miss[kp]===KICK_AFTER-1){toast(L().missWarn);logEv("miss_warn")}
   }
   stopClock();
   sfx("timeup");say(L().timeUp(nameOf(g.turn)));
@@ -1157,13 +1206,15 @@ function mount(){
   var b=$("board");
   Array.prototype.slice.call(b.querySelectorAll(".tok,.ker")).forEach(function(n){n.remove()});
   g.players.forEach(function(pl,pi){
-    var k=document.createElement("div"),sx=(pl.seat===0||pl.seat===3)?0:60,sy=pl.seat<2?0:60;
-    k.className="ker"+(pl.seat===2?" dark":"");k.id="ker-"+pi;k.style.left=sx+"%";k.style.top=sy+"%";
+    var vs=visSeat(pl.seat);
+    var k=document.createElement("div"),sx=(vs===0||vs===3)?0:60,sy=vs<2?0:60;
+    k.className="ker"+(vs===2?" dark":"");k.id="ker-"+pi;k.style.left=sx+"%";k.style.top=sy+"%";
+    k.setAttribute("data-you",L().youTag);
     k.innerHTML="<small></small><i></i>";b.appendChild(k);
     for(var t=0;t<4;t++){
       var el=document.createElement("button");
       el.type="button";el.className="tok";el.id="tok-"+pi+"-"+t;el.tabIndex=-1;
-      el.style.setProperty("--c",CSSC[pl.seat]);
+      el.style.setProperty("--c",CSSC[vs]);
       el.innerHTML="<span></span>";
       el.addEventListener("click",(function(a,c){return function(){onToken(a,c)}})(pi,t));
       b.appendChild(el);
@@ -1177,7 +1228,7 @@ function star(cx,cy,r){
 }
 function drawBoard(){
   var bySeat={},s='<rect width="15" height="15" fill="var(--board)"/>',LN='stroke="var(--line)" stroke-width=".045"';
-  var seatIdx={};g.players.forEach(function(p,i){bySeat[p.seat]=p;seatIdx[p.seat]=i});
+  var seatIdx={};g.players.forEach(function(p,i){var vs=visSeat(p.seat);bySeat[vs]=p;seatIdx[vs]=i});
   PATH.forEach(function(rc,i){
     var si=STARTS.indexOf(i),fill=si>=0?CSSC[si]:"var(--board)";
     s+='<rect x="'+rc[1]+'" y="'+rc[0]+'" width="1" height="1" fill="'+fill+'" '+LN+'/>';
@@ -1232,7 +1283,7 @@ function confetti(){
     if(t<4000)requestAnimationFrame(frame);else c.remove();
   })();
 }
-function yardCell(seat,ti){return [YARD[seat][0]+SPOT[ti][0]-0.15,YARD[seat][1]+SPOT[ti][1]]}
+function yardCell(seat,ti){var vs=visSeat(seat);return [YARD[vs][0]+SPOT[ti][0]-0.15,YARD[vs][1]+SPOT[ti][1]]}
 function place(el,rc,scale){
   el.style.left=(rc[1]*100/15)+"%";el.style.top=(rc[0]*100/15)+"%";
   el.style.setProperty("--s",scale);
@@ -1242,7 +1293,7 @@ function layout(){
   g.players.forEach(function(pl,pi){pl.tokens.forEach(function(p,ti){
     var el=$("tok-"+pi+"-"+ti);
     if(p<=-10){
-      var hs=g.players[-p-10].seat,n=held[hs]=(held[hs]||0)+1;
+      var hs=visSeat(g.players[-p-10].seat),n=held[hs]=(held[hs]||0)+1;
       place(el,[YARD[hs][0]+2.35+Math.floor((n-1)/6)*0.6,YARD[hs][1]+0.95+((n-1)%6)*0.62],0.58);return;
     }
     if(p===-1){place(el,yardCell(pl.seat,ti),1);return}
@@ -1301,13 +1352,14 @@ function renderChips(){
   var h="";
   g.players.forEach(function(pl,pi){
     var pr=pl.key&&bank.profiles[pl.key];
-    h+='<div class="chip'+(pi===g.turn&&phase!=="over"?" on":"")+'"><b><i style="background:'+CSSC[pl.seat]+'"></i>'+esc(pl.name)+'</b><small>'+(g.rank.indexOf(pi)>=0?"#"+(g.rank.indexOf(pi)+1)+" · "+(pl.key?fmt(pr?pr.pts:0):tagOf(pl)):(pl.key?"★ "+fmt(pr?pr.pts:0):tagOf(pl)))+'</small></div>';
+    h+='<div class="chip'+(pi===g.turn&&phase!=="over"?" on":"")+'"><b><i style="background:'+CSSC[visSeat(pl.seat)]+'"></i>'+esc(pl.name)+'</b><small>'+(g.rank.indexOf(pi)>=0?"#"+(g.rank.indexOf(pi)+1)+" · "+(pl.key?fmt(pr?pr.pts:0):tagOf(pl)):(pl.key?"★ "+fmt(pr?pr.pts:0):tagOf(pl)))+'</small></div>';
   });
   $("chips").innerHTML=h;
   g.players.forEach(function(pl,pi){
     var k=$("ker-"+pi);if(!k)return;
     var pr=pl.key&&bank.profiles[pl.key],out=g.out&&g.out.indexOf(pi)>=0,turn=pi===g.turn&&phase!=="over"&&!out;
     k.classList.toggle("on",turn);
+    k.classList.toggle("mine",pi===myPi());
     if(!turn)k.classList.remove("clock","low");
     k.dataset.info=out?L().outTag:(pl.key?"★ "+fmt(pr?pr.pts:0):tagOf(pl));
     kerText(pi);
@@ -1390,7 +1442,7 @@ function adFlush(){
   if(line)logEv("ad_views",line);
 }
 // Where a banner leads, when its sponsor has given a destination. Campaign details ride along so the sponsor can count arrivals.
-var AD_GAME="ludo-teranga",AD_CAMPAIGN="launch",adLast={};
+var AD_GAME="ludo-teranga",AD_CAMPAIGN="test-phase",adLast={};
 function adDest(a,pl){
   var u=String(a.url||"");if(!u)return "";
   if(!/^https?:\/\//i.test(u)||/^https?:\/\/([a-z0-9-]+\.)*(instagram|tiktok|facebook|wa)\.(com|me)\//i.test(u))return u;
@@ -1435,14 +1487,27 @@ function doRoll(){
   }
   showRoll(vals);
 }
+// A larger, purely visual echo of the roll shown over the board's center, for everyone looking at a shared
+// screen to see at a glance. It never intercepts taps; the real controls stay in the tray below.
+var diceCenterT=null;
+function diceCenterShow(vals,shaking){
+  var box=$("dice-center");if(!box)return;
+  var html="";vals.forEach(function(v){html+='<div class="die'+(shaking?" shake":"")+'">'+dieHTML(v)+'</div>'});
+  box.innerHTML=html;box.classList.add("show");
+}
+function diceCenterFadeLater(){
+  clearTimeout(diceCenterT);
+  diceCenterT=setTimeout(function(){var box=$("dice-center");if(box)box.classList.remove("show")},1100);
+}
 function showRoll(vals){
   stopClock();sfx("roll");
   phase="anim";$("roll").disabled=true;
+  clearTimeout(diceCenterT);
   var n=vals.length,ticks=reduced?0:7,e=epoch;
   (function tick(){
     if(e!==epoch)return;
-    if(ticks-->0){var v=[];for(var i=0;i<n;i++)v.push(1+Math.floor(Math.random()*6));renderDice(v);setTimeout(tick,85);return}
-    g.dice=vals.slice();g.rolled=vals.slice();g.bonus=false;noteRoll(g,vals);selDie=0;step();
+    if(ticks-->0){var v=[];for(var i=0;i<n;i++)v.push(1+Math.floor(Math.random()*6));renderDice(v);diceCenterShow(v,true);setTimeout(tick,85);return}
+    g.dice=vals.slice();g.rolled=vals.slice();g.bonus=false;noteRoll(g,vals);selDie=0;diceCenterShow(vals,false);diceCenterFadeLater();step();
   })();
 }
 function options(){
@@ -1475,6 +1540,7 @@ var stepNo=0;
 // Shown on every phone when a player is taken out for not playing.
 function kickFlow(pi){
   var mine=g.players[pi].id===myId;
+  if(mine)logEv("kicked");
   stopClock();sfx("timeup");
   say(L().kicked(nameOf(pi)));toast(mine?L().youOut:L().kicked(nameOf(pi)));
   phase="anim";g.dice=[];g.rolled=null;g.bonus=false;renderAll();
@@ -1538,6 +1604,7 @@ async function doMove(ti,di,remote){
 var DB=((window.LUDO_CONFIG&&window.LUDO_CONFIG.databaseURL)||"").replace(/\/+$/,"");
 var CFG=window.LUDO_CONFIG||{},AUTH_URL=(CFG.authUrl||"https://identitytoolkit.googleapis.com/v1").replace(/\/+$/,""),TOKEN_URL=(CFG.tokenUrl||"https://securetoken.googleapis.com/v1").replace(/\/+$/,"");
 var net=null,idleAt=0,myId=null,onErr="",pendingCode="",joinTries=0;
+var onlineView="play";
 try{myId=localStorage.getItem("ludo-id")}catch(e){}
 if(!myId){myId="p"+Math.random().toString(36).slice(2,10)+Date.now().toString(36);try{localStorage.setItem("ludo-id",myId)}catch(e){}}
 try{pendingCode=(new URLSearchParams(location.search).get("room")||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6)}catch(e){}
@@ -1914,7 +1981,7 @@ function enter(code,room){
 function hasName(){var hs=humanSeats();return !!(((cfg.me&&cfg.me.name)||"").trim()||(hs.length&&(cfg.names[hs[0]]||"").trim()))}
 function needName(){
   if(hasName()&&cleanText(meName())===meName())return false;
-  onErr=hasName()?L().errBadName:L().errName;renderOnline();
+  onErr=hasName()?L().errBadName:L().errName;onlineView="settings";renderOnline();
   var el=$("me-name");if(el){el.focus();el.classList.add("bad")}
   return true;
 }
@@ -2027,6 +2094,21 @@ function invite(){
   show("");
 }
 function openOnline(){refreshFriends();renderOnline();$("sheet-online").classList.add("open")}
+// No gameplay, local or online, for a visitor who has not signed in. Closes once they do.
+function renderGate(){
+  var t=L(),spons=ADS.map(function(a){return '<img src="'+a.img+'" alt="'+esc(a.name)+'" loading="lazy">'}).join("");
+  $("panel-gate").innerHTML='<img class="gate-hero" src="shots/gameplay-1.jpg" alt="" loading="lazy">'+
+    '<span class="gate-tag">'+t.gateTag+'</span>'+
+    '<h2>'+t.gateTitle+'</h2><p class="note" style="margin:0">'+t.gateSub+'</p>'+
+    '<div class="gate-spons"><span class="gate-spons-label">'+t.gateWith+'</span>'+spons+'</div>'+
+    '<button type="button" class="cta" id="gate-go" style="width:100%">'+t.gateCta+'</button>';
+  $("gate-go").addEventListener("click",function(){onErr="";$("sheet-gate").classList.remove("open");publishMe();openOnline()});
+}
+function syncGate(){
+  if(!EMAIL_ON)return;
+  if(pAuth){$("sheet-gate").classList.remove("open")}
+  else{renderGate();$("sheet-gate").classList.add("open")}
+}
 function refreshMyAvs(){
   var box=$("avs-me");if(!box)return;
   var keep=box.scrollLeft;box.innerHTML=avsHTML("me",meAv());box.scrollLeft=keep;
@@ -2047,13 +2129,21 @@ function renderOnline(){
   }else if(!net&&asking){
     h='<h2>'+t.askTitle+'</h2><p class="note" style="margin:0">'+t.askWait+(asking.stake?' '+t.askStake(fmt(asking.stake)):'')+'</p><button type="button" class="ghost" id="ask-stop">'+t.cancel+'</button>';
   }else if(!net){
-    h='<h2>'+t.onTitle+'</h2><p class="note" style="margin:0">'+t.onNote+'</p>';
-    h+='<div><h3>'+t.yourName+'</h3><div class="who"><input type="text" id="me-name" maxlength="12" autocomplete="off" placeholder="'+esc(hasName()?meName():t.namePh)+'" value="'+esc((cfg.me&&cfg.me.name)||"")+'" aria-label="'+t.yourName+'"><span class="bal" id="me-bal">★ '+fmt(balanceOf(meName()))+'</span></div><div class="avs" id="avs-me" style="margin-top:8px"></div></div>';
-    h+=acctHTML();
-    h+='<div><h3>'+t.joinTitle+'</h3><div class="who"><input type="text" id="join-code" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="'+t.codePh+'" value="'+esc(pendingCode)+'" aria-label="'+t.codePh+'"><button type="button" class="cta" id="join-go" style="padding:0 22px">'+t.join+'</button></div></div>';
-    h+='<div><h3>'+t.create+'</h3>'+seg([[2,"2"],[3,"3"],[4,"4"]],cfg.count,"ocount")+'<h3 style="margin-top:12px">'+t.startMode+'</h3>'+seg([["0",t.startManual],["1",t.startAuto]],cfg.autoStart?"1":"0","oauto")+'<p class="note">'+t.createNote+'</p><button type="button" class="cta" id="create-go" style="width:100%;margin-top:10px">'+t.createBtn+'</button></div>';
-    h+=friendsHTML();
-    h+=err+'<button type="button" class="ghost" id="on-close">'+t.close+'</button>';
+    h='<h2>'+(onlineView==="settings"?t.tabSettings:t.onTitle)+'</h2>';
+    if(onlineView!=="settings")h+='<p class="note" style="margin:0">'+t.onNote+'</p>';
+    h+=seg([["play",t.tabPlay],["settings",t.tabSettings]],onlineView,"onview");
+    if(onlineView==="settings"){
+      h+='<div><h3>'+t.yourName+'</h3><div class="who"><input type="text" id="me-name" maxlength="12" autocomplete="off" placeholder="'+esc(hasName()?meName():t.namePh)+'" value="'+esc((cfg.me&&cfg.me.name)||"")+'" aria-label="'+t.yourName+'"><span class="bal" id="me-bal">★ '+fmt(balanceOf(meName()))+'</span></div><div class="avs" id="avs-me" style="margin-top:8px"></div></div>';
+      h+=acctHTML();
+      h+=blockedHTML();
+      h+=prefsHTML();
+      h+=err+'<button type="button" class="ghost" id="on-close">'+t.close+'</button>';
+    }else{
+      h+='<div><h3>'+t.joinTitle+'</h3><div class="who"><input type="text" id="join-code" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="'+t.codePh+'" value="'+esc(pendingCode)+'" aria-label="'+t.codePh+'"><button type="button" class="cta" id="join-go" style="padding:0 22px">'+t.join+'</button></div></div>';
+      h+='<div><h3>'+t.create+'</h3>'+seg([[2,"2"],[3,"3"],[4,"4"]],cfg.count,"ocount")+'<h3 style="margin-top:12px">'+t.startMode+'</h3>'+seg([["0",t.startManual],["1",t.startAuto]],cfg.autoStart?"1":"0","oauto")+'<p class="note">'+t.createNote+'</p><button type="button" class="cta" id="create-go" style="width:100%;margin-top:10px">'+t.createBtn+'</button></div>';
+      h+=friendsHTML();
+      h+=err+'<button type="button" class="ghost" id="on-close">'+t.close+'</button>';
+    }
   }else{
     var r=net.room,c=r.cfg||{},host=r.host===myId,bs=seatsFor(c.count||4);
     h='<h2>'+t.lobby+'</h2><div class="code"><small>'+t.codeIs+'</small><b>'+esc(net.code)+'</b></div>';
@@ -2081,8 +2171,8 @@ function renderOnline(){
   var on=function(id,fn){var el=$(id);if(el)el.addEventListener("click",fn)};
   on("on-close",closeSheets);
   on("rejoin-stop",function(){rejoining=false;try{localStorage.removeItem("ludo-room")}catch(e){}closeSheets()});
-  on("join-go",function(){var c=$("join-code").value;pendingCode=fcClean(c).slice(0,6);if(needName()||needLogin())return;joinTries=0;joinRoom(c)});
-  on("create-go",function(){if(!needName()&&!needLogin())createRoom()});
+  on("join-go",function(){var c=$("join-code").value;pendingCode=fcClean(c).slice(0,6);if(needName()||needLogin()||needUname())return;joinTries=0;joinRoom(c)});
+  on("create-go",function(){if(!needName()&&!needLogin()&&!needUname())createRoom()});
   bindAcct();
   on("invite-go",invite);
   on("start-go",startOnline);
@@ -2096,6 +2186,10 @@ function renderOnline(){
     cfg.count=parseInt(b.getAttribute("data-val"),10);
     Array.prototype.slice.call(p.querySelectorAll('[data-set="ocount"]')).forEach(function(x){x.setAttribute("aria-pressed",x===b)});
   })});
+  Array.prototype.slice.call(p.querySelectorAll('[data-set="onview"]')).forEach(function(b){b.addEventListener("click",function(){
+    onlineView=b.getAttribute("data-val");onErr="";renderOnline();
+  })});
+  bindBlocked(p);bindPrefs(p);
   var nm=$("me-name");
   if(nm){
     nm.addEventListener("input",function(){cfg.me=cfg.me||{};cfg.me.name=nm.value;evName();$("me-bal").textContent="★ "+fmt(balanceOf(meName()))});
@@ -2123,7 +2217,7 @@ var friendsOff=false,friendsAt=0;
 function netMsg(e){if(e&&(e.status===401||e.status===403)){friendsOff=true;return L().errRules}return L().errNet}
 function publishMe(){
   if(!DB||!hasName()||(EMAIL_ON&&!pAuth))return;
-  dbx("PUT","/players/"+myFc,{name:meName(),av:meAv(),t:Date.now()}).then(function(){friendsOff=false}).catch(function(e){netMsg(e)});
+  dbx("PUT","/players/"+myFc,{name:meName(),av:meAv(),uname:(acct&&acct.uname)||"",t:Date.now()}).then(function(){friendsOff=false}).catch(function(e){netMsg(e)});
 }
 // Keeps friends' names and pictures current, and fills in a friend who was added before they had set a name.
 function refreshFriends(){
@@ -2147,14 +2241,29 @@ function addFriend(fc,name,av){
   if(friends.length>40)friends.shift();
   saveFriends();return true;
 }
-function addFriendByCode(raw){
-  var fc=fcClean(raw);onErr="";
+function addByFc(fc){
+  onErr="";
   if(fc.length!==8){onErr=L().errFc;renderOnline();return}
   if(fc===myFc){onErr=L().errSelf;renderOnline();return}
   if(isFriend(fc)){renderOnline();return}
   dbx("GET","/players/"+fc).then(function(p){
     // a friend who has not opened the game since friends were switched on is added by code; the name fills in later
     addFriend(fc,p&&p.name,p&&p.av);friendsAt=0;renderOnline();
+  }).catch(function(e){onErr=netMsg(e);renderOnline()});
+}
+function addFriendByCode(raw){
+  onErr="";
+  var s=String(raw||"");
+  // a real friend code is 8 uppercase letters/digits only; '@', lowercase, "_" or "." mean it's a username instead
+  if(!/^@/.test(s.trim())&&!/[a-z_.]/.test(s)){
+    var fc=fcClean(s);
+    if(fc.length===8){addByFc(fc);return}
+  }
+  var u=unameNorm(s);
+  if(!unameOk(u)){onErr=L().errFc;renderOnline();return}
+  dbx("GET","/usernames/"+u).then(function(owner){
+    if(!owner){onErr=L().errFc;renderOnline();return}
+    addByFc(owner);
   }).catch(function(e){onErr=netMsg(e);renderOnline()});
 }
 function removeFriend(fc){friends=friends.filter(function(f){return f.fc!==fc});saveFriends();renderOnline()}
@@ -2220,6 +2329,10 @@ function takeGift(k,v){
 }
 // ---------- Owner tools: opened by tapping the copyright line five times, then a private code ----------
 var OWNER="509df743e42091cd8e90480d6a3754c07ae3b30c89b9d8a04c3d9757dc47f6fe",ownerOn=false,footTaps=[],ownTo="",ownMsg="";
+// Firebase accounts allowed to read events, player activity and stats. Fixed on purpose: the rules
+// text always grants exactly these accounts, no matter which one happens to be signed in when it's copied.
+var OWNER_UIDS=["w1c591K1oofHlwp5xw37QQmifTy2","QauEiRdy0dZcQ4p9Dhl5MlI9cSt2"];
+function ownerUidExpr(){return "("+OWNER_UIDS.map(function(u){return "auth.uid === '"+String(u).replace(/[^A-Za-z0-9]/g,"")+"'"}).join(" || ")+")"}
 try{ownerOn=localStorage.getItem("ludo-owner")===OWNER}catch(e){}
 function sha(s){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)).then(function(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return ("0"+x.toString(16)).slice(-2)}).join("")})}
 // ---------- Owner: usage totals ----------
@@ -2261,24 +2374,26 @@ function ownerToken(){
 function ownerSignOut(){ownAuth=null;ownTok=null;ownStats=null;ownOpen=null;ownStatsMsg="";saveOwnAuth();renderOwner()}
 // The database rules that keep the statistics for this owner alone.
 function ownerRules(){
-  var own=String(ownAuth&&ownAuth.uid||"").replace(/[^A-Za-z0-9]/g,"");
-  // logins save, the older live game keeps working, and only the owner account reads the statistics and the player list
+  var ou=ownerUidExpr();
+  // logins save, the older live game keeps working, and only the owner accounts read the statistics and the player list
   if(EMAIL_ON)return '{"rules":{\n'+
-  ' "rooms":{"$code":{".read":true,".write":true,".validate":"$code.matches(/^[A-Z0-9]{6}$/)"}},\n'+
-  ' "players":{"$fc":{".read":true,".write":true,".validate":"$fc.matches(/^[A-Z0-9]{8}$/)"}},\n'+
-  ' "inbox":{"$fc":{".read":true,".write":true,".validate":"$fc.matches(/^[A-Z0-9]{8}$/)"}},\n'+
-  ' "accounts":{"$id":{".read":"$id.matches(/^[a-f0-9]{40}$/) || (auth != null && auth.uid === $id)",".write":"$id.matches(/^[a-f0-9]{40}$/) || (auth != null && auth.uid === $id)"}},\n'+
+  ' "rooms":{"$code":{".read":"auth != null",".write":"auth != null",".validate":"$code.matches(/^[A-Z0-9]{6}$/)"}},\n'+
+  ' "players":{"$fc":{".read":"auth != null",".write":"auth != null",".validate":"$fc.matches(/^[A-Z0-9]{8}$/)"}},\n'+
+  ' "inbox":{"$fc":{".read":"auth != null",".write":"auth != null",".validate":"$fc.matches(/^[A-Z0-9]{8}$/)"}},\n'+
+  ' "usernames":{"$u":{".read":"auth != null",".write":"auth != null",".validate":"$u.matches(/^[a-z0-9_.]{3,20}$/) && (!newData.exists() || (newData.isString() && newData.val().matches(/^[A-Z0-9]{8}$/)))"}},\n'+
+  ' "accounts":{"$id":{".read":"auth != null && ($id.matches(/^[a-f0-9]{40}$/) || auth.uid === $id)",".write":"auth != null && ($id.matches(/^[a-f0-9]{40}$/) || auth.uid === $id)"}},\n'+
   ' "reports":{"$id":{".write":"!data.exists()"}},\n'+
-  ' "events":{".read":"auth != null && auth.uid === \''+own+'\'","$d":{".write":"auth != null && auth.uid === \''+own+'\' && !newData.exists()","$k":{".write":"!data.exists()",".validate":"$d.matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) && newData.hasChildren([\'e\',\'t\']) && newData.child(\'e\').isString() && newData.child(\'e\').val().length <= 24 && (!newData.child(\'r\').exists() || (newData.child(\'r\').isString() && newData.child(\'r\').val().length <= 60))"}}},\n'+
-  ' "seen":{".read":"auth != null && auth.uid === \''+own+'\'","$u":{".read":"auth != null && auth.uid === $u",".write":"auth != null && auth.uid === $u"}},\n'+
-  ' "stats":{"days":{".read":"auth != null && auth.uid === \''+own+'\'","$d":{"$s":{".write":true,".validate":"$d.matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) && $s.matches(/^[a-z0-9]{10}$/)"}}}}}}';
+  ' "events":{".read":"auth != null && '+ou+'","$d":{".write":"auth != null && '+ou+' && !newData.exists()","$k":{".write":"!data.exists()",".validate":"$d.matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) && newData.hasChildren([\'e\',\'t\']) && newData.child(\'e\').isString() && newData.child(\'e\').val().length <= 24 && (!newData.child(\'r\').exists() || (newData.child(\'r\').isString() && newData.child(\'r\').val().length <= 60))"}}},\n'+
+  ' "seen":{".read":"auth != null && '+ou+'","$u":{".read":"auth != null && auth.uid === $u",".write":"auth != null && auth.uid === $u"}},\n'+
+  ' "stats":{"days":{".read":"auth != null && '+ou+'","$d":{"$s":{".write":true,".validate":"$d.matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) && $s.matches(/^[a-z0-9]{10}$/)"}}}}}}';
   return '{"rules":{\n'+
   ' "rooms":{"$code":{".read":true,".write":true,".validate":"$code.matches(/^[A-Z0-9]{6}$/)"}},\n'+
   ' "players":{"$fc":{".read":true,".write":true,".validate":"$fc.matches(/^[A-Z0-9]{8}$/)"}},\n'+
   ' "inbox":{"$fc":{".read":true,".write":true,".validate":"$fc.matches(/^[A-Z0-9]{8}$/)"}},\n'+
+  ' "usernames":{"$u":{".read":true,".write":true,".validate":"$u.matches(/^[a-z0-9_.]{3,20}$/) && (!newData.exists() || (newData.isString() && newData.val().matches(/^[A-Z0-9]{8}$/)))"}},\n'+
   ' "accounts":{"$id":{".read":true,".write":true,".validate":"$id.matches(/^[a-f0-9]{40}$/)"}},\n'+
   ' "reports":{"$id":{".write":"!data.exists()"}},\n'+
-  ' "stats":{"days":{".read":"auth != null && auth.uid === \''+String(ownAuth&&ownAuth.uid||"").replace(/[^A-Za-z0-9]/g,"")+'\'","$d":{"$s":{".write":true,".validate":"$d.matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) && $s.matches(/^[a-z0-9]{10}$/)"}}}}}}';
+  ' "stats":{"days":{".read":"auth != null && '+ou+'","$d":{"$s":{".write":true,".validate":"$d.matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) && $s.matches(/^[a-z0-9]{10}$/)"}}}}}}';
 }
 function loadStats(){
   if(!ownAuth){ownStats=null;ownStatsMsg="";renderOwner();return}
@@ -2459,7 +2574,7 @@ function acceptInvite(code){
   if(net)leaveRoom();
   closeSheets();joinTries=0;pendingCode=code;onErr="";
   openOnline();
-  if(!needName()&&!needLogin())joinRoom(code);
+  if(!needName()&&!needLogin()&&!needUname())joinRoom(code);
 }
 function renderInvite(){
   var bar=$("invite-bar"),ks=Object.keys(invites);
@@ -2473,8 +2588,8 @@ function renderInvite(){
 }
 function avHTML(av){av=cleanAv(av,0);return '<span class="av">'+(av.t==="i"?'<img alt="" src="'+esc(av.v)+'">':esc(av.v))+'</span>'}
 function friendsHTML(){
-  var t=L(),h='<div><h3>'+t.friends+'</h3>'+(friendsOff?'<p class="warn" style="margin:0 0 8px">'+t.errRules+'</p>':"")+'<p class="note" style="margin:0 0 8px">'+t.yourCode+' <b class="fc">'+fcShow(myFc)+'</b> <button type="button" class="mini" id="fc-share">'+t.share+'</button> <span id="fc-note"></span></p>';
-  h+='<div class="who"><input type="text" id="fc-add" maxlength="9" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX" aria-label="'+t.fcPh+'"><button type="button" class="cta" id="fc-go" style="padding:0 22px">'+t.addFriend+'</button></div>';
+  var t=L(),h='<div><h3>'+t.friends+'</h3>'+(friendsOff?'<p class="warn" style="margin:0 0 8px">'+t.errRules+'</p>':"")+'<p class="note" style="margin:0 0 8px">'+(acct&&acct.uname?'<b>@'+esc(acct.uname)+'</b> · ':"")+t.yourCode+' <b class="fc">'+fcShow(myFc)+'</b> <button type="button" class="mini" id="fc-share">'+t.share+'</button> <span id="fc-note"></span></p>';
+  h+='<div class="who"><input type="text" id="fc-add" maxlength="21" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="'+t.fcPh+'" aria-label="'+t.fcPh+'"><button type="button" class="cta" id="fc-go" style="padding:0 22px">'+t.addFriend+'</button></div>';
   if(!friends.length)h+='<p class="note">'+t.noFriends+'</p>';
   else h+='<ol class="places" style="margin-top:8px">'+friends.map(function(f){
     return '<li>'+avHTML(f.av)+'<b>'+esc(f.name)+'</b><button type="button" class="mini q" data-rmf="'+f.fc+'" aria-label="'+t.remove+' '+esc(f.name)+'">'+t.remove+'</button></li>';
@@ -2510,7 +2625,7 @@ var aim=-1,aimT=null,lastSentAt=0,REACT=["😂","👏","😮","🔥","👋","�
 var REACT_SFX={"😂":"e-laugh","👏":"e-clap","😮":"e-wow","🔥":"e-fire","👋":"e-wave","🏃🏿‍♂️":"e-run","🏃🏾‍♀️":"e-run","🤷🏾‍♂️":"e-shrug","🤷🏾‍♀️":"e-shrug","⏳":"e-tick","🇸🇳":"e-drum","😜":"e-boing","💀":"e-skull","🙏🏾":"e-chime","🤲🏾":"e-chime","😭":"e-wow","🎲":"e-boing","👀":"e-wow","🤦🏾‍♂️":"e-shrug","👨🏿‍🦯‍➡️":"e-run","🩴":"e-clap","👑":"e-chime","⚽️":"e-boing","🥇":"e-chime","🥈":"e-chime","🥉":"e-chime","🏥":"e-tick","💵":"e-chime"};
 function chatSfx(m){sfx(REACT_SFX[m]||"pop")}
 // Where a player's kër sits on the board, as a percentage of the board's width and height.
-function kerSpot(pi){var s=g.players[pi].seat;return {x:(s===0||s===3)?20:80,y:s<2?20:80}}
+function kerSpot(pi){var s=visSeat(g.players[pi].seat);return {x:(s===0||s===3)?20:80,y:s<2?20:80}}
 // An emoji travels across the board from the sender's kër to the player it is meant for.
 function flyEmoji(from,to,m){
   var board=$("board"),a=kerSpot(from),targets=to>=0?[to]:g.players.map(function(p,i){return i}).filter(function(i){return i!==from});
@@ -2583,7 +2698,7 @@ function bubble(v){
   var emo=REACT.indexOf(m)>=0||(m.length<=4&&!/[A-Za-z0-9]/.test(m));
   if(emo)flyEmoji(v.from,(v.to>=0&&g.players[v.to])?v.to:-1,m);
   b.className="bubble"+(emo?" tag":"");b.id="bub-"+v.from;
-  b.style[pl.seat<2?"top":"bottom"]="2%";b.style[(pl.seat===0||pl.seat===3)?"left":"right"]="2%";
+  var bvs=visSeat(pl.seat);b.style[bvs<2?"top":"bottom"]="2%";b.style[(bvs===0||bvs===3)?"left":"right"]="2%";
   var who=document.createElement("small");
   who.textContent=pl.name+(v.to>=0&&g.players[v.to]?" → "+(v.to===me?L().you:g.players[v.to].name):"");
   b.appendChild(who);if(!emo)b.appendChild(document.createTextNode(m));
@@ -2661,6 +2776,19 @@ function statOver(){
 // One short line per event. It never holds an email, a password or a phone number. Before a player is signed in,
 // the line carries only this device's random statistics code.
 var evCount=0,evErr=0,authKind="";
+// Roughly where a sign-in failure happened (city/country only, never the IP itself), looked up once per visit
+// from a public location service. Best-effort: if it is slow, blocked, or fails, failures just log without it.
+var geoTried=false,geoCache=null;
+function fetchGeo(){
+  if(geoTried||!DB||!EMAIL_ON)return;geoTried=true;
+  try{
+    var ctrl=(typeof AbortController!=="undefined")?new AbortController():null;
+    if(ctrl)setTimeout(function(){try{ctrl.abort()}catch(e){}},3000);
+    fetch("https://ipwho.is/?fields=success,country,city",ctrl?{signal:ctrl.signal}:{}).then(function(r){return r.json()}).then(function(j){
+      if(j&&j.success!==false)geoCache={co:String(j.country||"").slice(0,40),ci:String(j.city||"").slice(0,40)};
+    }).catch(function(){});
+  }catch(e){}
+}
 function evDevice(){
   try{
     var ua=navigator.userAgent||"",touch=(navigator.maxTouchPoints||0)>0,small=Math.min(screen.width,screen.height);
@@ -2673,6 +2801,7 @@ function logEv(e,r,more){
   if(!DB||!EMAIL_ON||evCount>=90)return;evCount++;
   var d={e:String(e).slice(0,24),t:Date.now(),d:statId||"",cc:String((acct&&acct.cc)||guessCc()||""),pf:NAT?"app":"web",b:parseInt(BUILD,10)||0,l:String(typeof lang==="string"?lang:"").slice(0,2),dv:evDevice()};
   if(r)d.r=String(r).slice(0,60);
+  if(/^(signin|signup|google)_fail$/.test(d.e)&&geoCache){d.gco=geoCache.co;d.gci=geoCache.ci}
   if(more)Object.keys(more).forEach(function(k){if(/^(sp|bn|cp|pl|gm|to|bot)$/.test(k)&&more[k]!==""&&more[k]!==0)d[k]=typeof more[k]==="number"?more[k]:String(more[k]).slice(0,120)});
   if(pAuth&&acct)d.u=pAuth.uid;
   try{fetch(DB+"/events/"+statDay()+".json",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d),keepalive:true}).catch(function(){})}catch(x){}
@@ -2774,6 +2903,7 @@ window.addEventListener("pagehide",function(){if(seen&&seenDirty>0)seenFlush()})
 // Switched on when the project's key is present in config.js. The password is sent to the sign-in service
 // only and is never kept; the device keeps a renewal token so the player stays signed in.
 var API_KEY=String(CFG.apiKey||""),EMAIL_ON=!!API_KEY;
+var GOOGLE_CLIENT_ID="263422155646-10h439cj74jmeaqngha5in3a79nkedso.apps.googleusercontent.com";
 var pAuth=null,pTok=null,pTokP=null,legacyAid="",authBusy=false;
 try{pAuth=JSON.parse(localStorage.getItem("ludo-auth")||"null")}catch(e){}
 if(!pAuth||typeof pAuth!=="object"||!pAuth.rt||!pAuth.uid)pAuth=null;
@@ -2810,6 +2940,7 @@ function sessionEnded(){
   if(acct){acct=null;saveAcct();acctNote=L().sessionOver}
   if(inboxEs){try{inboxEs.close()}catch(e){}inboxEs=null}
   if($("sheet-online")&&$("sheet-online").classList.contains("open")&&!net)renderOnline();
+  syncGate();
 }
 // ---------- Chat safety: word filter, blocked players, reports ----------
 // Typed comments pass through a word filter when sent and again when shown.
@@ -2850,6 +2981,32 @@ function blockPlayer(pi){
   var b=$("bub-"+pi);if(b)b.remove();
 }
 function unblockPlayer(pi){var pl=g&&g.players[pi];if(!pl)return;delete blocked[pl.id];saveBlocked()}
+// Settings: the blocked list, shown so a player can undo a block from outside a game.
+function blockedHTML(){
+  var t=L(),keys=Object.keys(blocked);
+  var h='<div><h3>'+t.blockedTitle+'</h3>';
+  if(!keys.length)h+='<p class="note" style="margin:0">'+t.blockedNone+'</p>';
+  else h+='<ol class="places">'+keys.map(function(k){
+    var b=blocked[k]||{};
+    return '<li><b>'+esc(b.n||t.blockedWho)+'</b><button type="button" class="mini q" data-unblk="'+esc(k)+'">'+t.unblock+'</button></li>';
+  }).join("")+'</ol>';
+  return h+'</div>';
+}
+function bindBlocked(p){
+  Array.prototype.slice.call(p.querySelectorAll('[data-unblk]')).forEach(function(b){b.addEventListener("click",function(){
+    delete blocked[b.getAttribute("data-unblk")];saveBlocked();renderOnline();
+  })});
+}
+// Settings: quick access to sound and language, mirroring the icons on the main screen.
+function prefsHTML(){
+  var t=L();
+  return '<div><h3>'+t.prefsTitle+'</h3><p class="note" style="margin:0 0 8px">'+(soundOn?t.soundOn:t.soundOff)+' <button type="button" class="mini" id="pf-sound">'+(soundOn?t.soundOff:t.soundOn)+'</button></p>'+
+    '<div class="lang" role="group" aria-label="Language"><button type="button" data-pflang="en" aria-pressed="'+(lang==="en")+'">EN</button><button type="button" data-pflang="fr" aria-pressed="'+(lang==="fr")+'">FR</button><button type="button" data-pflang="it" aria-pressed="'+(lang==="it")+'">IT</button></div></div>';
+}
+function bindPrefs(p){
+  if($("pf-sound"))$("pf-sound").addEventListener("click",function(){$("btn-sound").click();renderOnline()});
+  Array.prototype.slice.call(p.querySelectorAll('[data-pflang]')).forEach(function(b){b.addEventListener("click",function(){setLang(b.getAttribute("data-pflang"))})});
+}
 // A report holds the two players' game identities, the name and last comment of the reported player,
 // and the room. No phone number is involved.
 function reportPlayer(pi){
@@ -2863,6 +3020,44 @@ function reportPlayer(pi){
 // The number itself is never stored or sent. It is turned into a scrambled code on the device, and that
 // code is the key to the player's saved name, picture, points and friends. Other players never receive it.
 var acct=null,acctT=null,acctOff=false,acctNote="",saveOff=false;
+var unameEditing=false,unameErr="",unameBusy=false;
+var UNAME_LOCK_MS=15*24*60*60*1000;
+function unameNorm(s){return String(s||"").trim().replace(/^@+/,"").toLowerCase()}
+function unameOk(u){return /^[a-z0-9_.]{3,20}$/.test(u)&&!/\.\.|^\.|\.$/.test(u)}
+function unameLockedUntil(){return acct&&acct.uname&&acct.unameAt?acct.unameAt+UNAME_LOCK_MS:0}
+function unameLocked(){return !!(acct&&acct.uname)&&Date.now()<unameLockedUntil()}
+function needUname(){
+  if(!DB||!acct||acct.uname)return false;
+  unameEditing=true;onErr=L().errUname;onlineView="settings";renderOnline();focusBad("uname-in");return true;
+}
+function claimUname(raw){
+  var u=unameNorm(raw);
+  if(!unameOk(u)){unameErr=L().unameBad;renderOnline();focusBad("uname-in");return}
+  if(badWord(u)){unameErr=L().unameBad2;renderOnline();focusBad("uname-in");return}
+  if(unameBusy)return;
+  var old=acct&&acct.uname?unameNorm(acct.uname):"";
+  if(u===old){unameEditing=false;unameErr="";renderOnline();return}
+  unameBusy=true;unameErr="";renderOnline();
+  dbx("GET","/usernames/"+u).then(function(owner){
+    unameBusy=false;
+    if(owner!==null&&owner!==myFc){unameErr=L().unameTaken;renderOnline();focusBad("uname-in");return}
+    dbx("PUT","/usernames/"+u,myFc).then(function(){
+      if(old&&old!==u)dbx("PUT","/usernames/"+old,null).catch(function(){});
+      if(!acct)return;
+      acct.uname=u;acct.unameAt=Date.now();saveAcct();unameEditing=false;
+      publishMe();pushAcct(true);renderOnline();
+    }).catch(function(){unameBusy=false;unameErr=L().unameFail;renderOnline()});
+  }).catch(function(){unameBusy=false;unameErr=L().unameFail;renderOnline()});
+}
+function unameBlockHTML(){
+  if(!acct)return "";
+  var t=L();
+  if(acct.uname&&!unameEditing){
+    var left=Math.max(0,Math.ceil((unameLockedUntil()-Date.now())/86400000));
+    return '<p class="note" style="margin:6px 0 0">'+t.unameIs+' <b>@'+esc(acct.uname)+'</b>'+(left>0?' <span style="color:var(--muted)">'+t.unameWait(left)+'</span>':' <button type="button" class="mini q" id="uname-edit" style="padding-left:0;text-decoration:underline">'+t.unameChange+'</button>')+'</p>';
+  }
+  return '<div style="margin-top:8px"><p class="warn" style="margin:0 0 6px">'+t.unameNeed+'</p><div class="who"><input type="text" id="uname-in" maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="'+t.unamePh+'" value="'+esc(acct.uname||"")+'" aria-label="'+t.unamePh+'"><button type="button" class="cta" id="uname-go" style="padding:0 18px"'+(unameBusy?" disabled":"")+'>'+t.unameSet+'</button></div>'+(unameErr?'<p class="err" role="alert">'+esc(unameErr)+'</p>':"")+'</div>';
+}
 try{acct=JSON.parse(localStorage.getItem("ludo-acct")||"null")}catch(e){}
 if(!acct||!/^([a-f0-9]{40}|[A-Za-z0-9]{20,40})$/.test(acct.aid||""))acct=null;
 // With email sign-in, a device that was signed in the old way (phone number) keeps its name and points on
@@ -2902,7 +3097,7 @@ function scramble(s){
 function saveAcct(){try{if(acct)localStorage.setItem("ludo-acct",JSON.stringify(acct));else localStorage.removeItem("ludo-acct")}catch(e){}}
 function acctDoc(){
   var nm=meName(),pr=bank.profiles[keyOf(nm)]||{};
-  return {id:myId,fc:myFc,name:nm,av:meAv(),pts:typeof pr.pts==="number"?pr.pts:WELCOME,games:pr.games||0,wins:pr.wins||0,caps:pr.caps||0,best:pr.best||0,run:pr.run||0,day:pr.day||"",friends:friends.slice(0,40),cc:(acct&&acct.cc)||"",mig:acct&&acct.mig?1:0,t:Date.now()};
+  return {id:myId,fc:myFc,name:nm,av:meAv(),pts:typeof pr.pts==="number"?pr.pts:WELCOME,games:pr.games||0,wins:pr.wins||0,caps:pr.caps||0,best:pr.best||0,run:pr.run||0,day:pr.day||"",friends:friends.slice(0,40),cc:(acct&&acct.cc)||"",mig:acct&&acct.mig?1:0,uname:(acct&&acct.uname)||"",unameAt:(acct&&acct.unameAt)||0,t:Date.now()};
 }
 // Saves the signed-in player's data a moment after it changes.
 function pushAcct(now){
@@ -2956,7 +3151,7 @@ function pushAcct(now){
 function baseOf(d){return {pts:typeof d.pts==="number"?d.pts:WELCOME,games:d.games||0,wins:d.wins||0,caps:d.caps||0}}
 // Brings the saved account onto this device.
 function adoptAcct(d){
-  if(acct){acct.b=baseOf(d);saveAcct()}
+  if(acct){acct.b=baseOf(d);if(typeof d.uname==="string"&&d.uname){acct.uname=d.uname;acct.unameAt=d.unameAt||acct.unameAt||0}saveAcct()}
   if(typeof d.id==="string"&&/^p[a-z0-9]{6,40}$/.test(d.id)){myId=d.id;try{localStorage.setItem("ludo-id",myId)}catch(e){}}
   if(typeof d.fc==="string"&&/^[A-Z0-9]{8}$/.test(d.fc)&&d.fc!==myFc){
     myFc=d.fc;try{localStorage.setItem("ludo-fc",myFc)}catch(e){}
@@ -3009,7 +3204,7 @@ function signOut(){
   cfg.me={name:"",av:null};friends=[];
   try{localStorage.setItem("ludo-friends","[]");localStorage.setItem("ludo-cfg2",JSON.stringify(cfg))}catch(e){}
   if(inboxEs){try{inboxEs.close()}catch(e){}inboxEs=null}
-  openInbox();renderOnline();
+  openInbox();renderOnline();syncGate();
 }
 // Clears everything this device holds about the account.
 function wipeLocalAcct(){
@@ -3054,6 +3249,17 @@ function pullAcct(force){
 // ---------- Email sign-in: create a login, sign in, bring an older account along ----------
 var CCN=[["221","🇸🇳 Sénégal"],["1","🇺🇸 USA / Canada"],["33","🇫🇷 France"],["39","🇮🇹 Italia"],["other","🌍 …"]];
 function emailOk(e){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)&&e.length<=120}
+var MAIL_FIX={"gmial.com":"gmail.com","gmai.com":"gmail.com","gmail.co":"gmail.com","gmail.con":"gmail.com","gnail.com":"gmail.com","gmil.com":"gmail.com","gmail.cm":"gmail.com",
+  "yaho.com":"yahoo.com","yahoo.co":"yahoo.com","yahoo.con":"yahoo.com","yaoo.com":"yahoo.com",
+  "hotmial.com":"hotmail.com","hotmai.com":"hotmail.com","hotmail.co":"hotmail.com","hotmail.con":"hotmail.com",
+  "outlok.com":"outlook.com","outlook.co":"outlook.com","outlool.com":"outlook.com",
+  "icloud.co":"icloud.com","iclod.com":"icloud.com","icloud.con":"icloud.com"};
+// Quietly fixes a handful of common typo'd email domains before we check the address.
+function fixEmailTypo(e){
+  var at=e.lastIndexOf("@");if(at<0)return e;
+  var fixed=MAIL_FIX[e.slice(at+1)];
+  return fixed?e.slice(0,at+1)+fixed:e;
+}
 function maskMail(e){var q=String(e||"").split("@");return q.length===2?q[0].slice(0,2)+"•••@"+q[1]:""}
 function langOfCc(cc){return cc==="221"||cc==="33"?"fr":cc==="39"?"it":cc==="1"?"en":""}
 function authMsg(e){
@@ -3069,10 +3275,11 @@ function authMsg(e){
 }
 function focusBad(id){var el=$(id);if(el){el.focus();el.classList.add("bad")}}
 function emailSign(email,pw,create,cc){
-  email=String(email||"").trim().toLowerCase();pw=String(pw||"");
+  email=fixEmailTypo(String(email||"").trim().toLowerCase());pw=String(pw||"");
   onErr="";acctNote="";
   if(authBusy)return;
   authKind=create?"signup":"signin";
+  if(!email){logEv(authKind+"_fail","no_email");onErr=L().emNoEmail;renderOnline();focusBad("em-mail");return}
   if(!emailOk(email)){logEv(authKind+"_fail","bad_email");onErr=L().emInvalid;renderOnline();focusBad("em-mail");return}
   if(!pw){logEv(authKind+"_fail","no_password");onErr=L().emNoPw;renderOnline();focusBad("em-pw");return}
   if(create&&pw.length<8){logEv("signup_fail","weak_password");onErr=L().emWeak;renderOnline();focusBad("em-pw");return}
@@ -3089,11 +3296,27 @@ function emailSign(email,pw,create,cc){
     authBusy=false;onErr=e&&e.auth?authMsg(e):L().errNet;renderOnline();
   });
 }
+// Google sign-in: same shared afterAuth() flow as email, just a different way in.
+function googleSign(idToken,cc){
+  onErr="";acctNote="";
+  if(authBusy||!idToken)return;
+  authKind="google";
+  logEv(authKind+"_try");
+  authBusy=true;renderOnline();
+  authCall("accounts:signInWithIdp",{postBody:"id_token="+encodeURIComponent(idToken)+"&providerId=google.com",requestUri:String(window.location.href),returnSecureToken:true}).then(function(j){
+    pAuth={rt:j.refreshToken,uid:j.localId,email:j.email,ver:true};savePAuth();
+    pTok={t:j.idToken,exp:Date.now()+(parseInt(j.expiresIn,10)||3600)*1000-300000};
+    return afterAuth(cc);
+  }).catch(function(e){
+    logEv(authKind+"_fail",authCode(e));
+    authBusy=false;onErr=L().googleFail;renderOnline();
+  });
+}
 // After the sign-in service says yes: load this player's saved game, or bring an older one along, or start one.
 function afterAuth(cc){
   var uid=pAuth.uid,hint=maskMail(pAuth.email);
   function done(){
-    authBusy=false;autoLang(langOfCc(acct.cc));publishMe();openInbox();checkVerified();seenStart();renderOnline();if(g)renderAll();
+    authBusy=false;autoLang(langOfCc(acct.cc));publishMe();openInbox();checkVerified();seenStart();renderOnline();syncGate();if(g)renderAll();
   }
   return dbx("GET","/accounts/"+uid).then(function(d){
     if(d&&d.id&&d.fc){
@@ -3104,7 +3327,7 @@ function afterAuth(cc){
     function refused(e){
       pAuth=null;pTok=null;savePAuth();acct=null;saveAcct();authBusy=false;
       logEv(authKind+"_fail",e&&(e.status===401||e.status===403)?"save_refused":"network");
-      onErr=e&&(e.status===401||e.status===403)?L().emSetup:L().errNet;renderOnline();
+      onErr=e&&(e.status===401||e.status===403)?L().emSetup:L().errNet;renderOnline();syncGate();
     }
     var old=legacyAid?dbx("GET","/accounts/"+legacyAid).catch(function(){return null}):Promise.resolve(null);
     return old.then(function(o){
@@ -3144,7 +3367,7 @@ function resendVerify(){
     .then(function(){acctNote=L().emSent;renderOnline()},function(e){onErr=e&&e.auth?authMsg(e):L().errNet;renderOnline()});
 }
 function resetPassword(email){
-  email=String(email||"").trim().toLowerCase();onErr="";acctNote="";
+  email=fixEmailTypo(String(email||"").trim().toLowerCase());onErr="";acctNote="";
   if(!emailOk(email)){onErr=L().emResetNeed;renderOnline();focusBad("em-mail");return}
   logEv("reset_request");
   authCall("accounts:sendOobCode",{requestType:"PASSWORD_RESET",email:email})
@@ -3182,6 +3405,7 @@ function emailAcctHTML(){
   if(acct){
     h+='<p class="note" style="margin:0">'+t.signedInAs(esc(acct.hint||""))+' <button type="button" class="mini" id="ph-out">'+t.signOut+'</button></p>'+(acctNote?'<p class="note" style="margin:6px 0 0;color:var(--accent)" role="status">'+esc(acctNote)+'</p>':"");
     if(saveOff)h+='<p class="warn" style="margin:8px 0 0">'+t.saveOff+'</p>';
+    h+=unameBlockHTML();
     if(pAuth&&pAuth.ver===false)h+='<p class="note">'+t.emConfirm+' <button type="button" class="mini" id="em-resend">'+t.emAgain+'</button></p>';
     if(!acct.mig&&!net)h+='<details class="mv"><summary>'+t.moveAsk+'</summary><p class="note" style="margin:8px 0">'+t.moveNote+'</p><div class="who"><select id="mv-cc" aria-label="'+t.phCc+'">'+CCS.map(function(c){return '<option value="'+c[0]+'"'+(c[0]===(acct.cc||guessCc())?" selected":"")+'>'+c[1]+'</option>'}).join("")+'</select><input type="tel" id="mv-num" inputmode="tel" maxlength="20" placeholder="'+t.phPh+'" aria-label="'+t.phPh+'"></div><button type="button" class="mini" id="mv-go" style="margin-top:8px">'+t.moveGo+'</button></details>';
     if(delAsk)h+='<p class="warn" style="margin:10px 0 8px">'+t.delAsk+'</p><div class="who"><button type="button" class="mini danger" id="del-yes">'+t.delYes+'</button><button type="button" class="mini" id="del-no">'+t.delNo+'</button></div>';
@@ -3194,13 +3418,15 @@ function emailAcctHTML(){
   h+='<input type="password" class="fld" id="em-pw" autocomplete="current-password" maxlength="100" placeholder="'+t.pwPh+'" aria-label="'+t.pwPh+'">';
   h+='<select class="fld" id="em-cc" aria-label="'+t.phCc+'">'+CCN.map(function(c){return '<option value="'+c[0]+'"'+(c[0]===cc?" selected":"")+'>'+c[1]+'</option>'}).join("")+'</select>';
   h+='<button type="button" class="cta" id="em-in"'+(authBusy?" disabled":"")+'>'+t.emIn+'</button><button type="button" class="ghost" id="em-new" style="margin:0"'+(authBusy?" disabled":"")+'>'+t.emNew+'</button></div>';
+  if(GOOGLE_CLIENT_ID)h+='<div class="or-div">'+t.orWord+'</div><div class="g-wrap" id="g-wrap"></div>';
   h+=(acctNote?'<p class="note" style="color:var(--accent)" role="status">'+esc(acctNote)+'</p>':"");
-  h+='<p class="note"><button type="button" class="mini q" id="em-reset" style="padding-left:0;text-decoration:underline">'+t.emForgot+'</button></p>';
+  h+='<p class="note" style="text-align:center"><button type="button" class="mini" id="em-reset" style="color:var(--accent);border-color:var(--accent);font-weight:800">'+t.emForgot+'</button></p>';
   h+='<p class="note">'+t.acctNote2+'</p><p class="note"><a href="privacy.html"'+BLANK+'>'+t.terms+'</a></p></div>';
   return h;
 }
 function needLogin(){
   if(acct||acctOff)return false;
+  onlineView="settings";
   if(EMAIL_ON){onErr=L().errLogin2;renderOnline();focusBad("em-mail");return true}
   onErr=L().errLogin;renderOnline();
   var el=$("ph-num");if(el){el.focus();el.classList.add("bad")}
@@ -3222,10 +3448,24 @@ function acctHTML(){
   return h;
 }
 function bindAcct(){
+  fetchGeo();
+  if($("uname-go"))$("uname-go").addEventListener("click",function(){claimUname($("uname-in").value)});
+  if($("uname-in"))$("uname-in").addEventListener("keydown",function(ev){if(ev.key==="Enter")claimUname($("uname-in").value)});
+  if($("uname-edit"))$("uname-edit").addEventListener("click",function(){if(unameLocked())return;unameEditing=true;unameErr="";renderOnline()});
   if($("ph-go"))$("ph-go").addEventListener("click",function(){signIn($("ph-cc").value,$("ph-num").value)});
   if($("em-in"))$("em-in").addEventListener("click",function(){emailSign($("em-mail").value,$("em-pw").value,false,$("em-cc").value)});
   if($("em-new"))$("em-new").addEventListener("click",function(){emailSign($("em-mail").value,$("em-pw").value,true,$("em-cc").value)});
   if($("em-reset"))$("em-reset").addEventListener("click",function(){resetPassword($("em-mail").value)});
+  if($("em-mail")&&$("em-pw")){
+    var emGate=function(){
+      var ok=$("em-mail").value.trim()&&$("em-pw").value;
+      if($("em-in"))$("em-in").disabled=authBusy||!ok;
+      if($("em-new"))$("em-new").disabled=authBusy||!ok;
+    };
+    emGate();
+    $("em-mail").addEventListener("input",emGate);
+    $("em-pw").addEventListener("input",emGate);
+  }
   if($("em-resend"))$("em-resend").addEventListener("click",resendVerify);
   if($("mv-go"))$("mv-go").addEventListener("click",function(){claimPhone($("mv-cc").value,$("mv-num").value)});
   if($("ask-stop"))$("ask-stop").addEventListener("click",function(){stopAsk("",true)});
@@ -3233,7 +3473,28 @@ function bindAcct(){
   if($("del-go"))$("del-go").addEventListener("click",function(){delAsk=true;acctNote="";renderOnline()});
   if($("del-no"))$("del-no").addEventListener("click",function(){delAsk=false;renderOnline()});
   if($("del-yes"))$("del-yes").addEventListener("click",deleteAcct);
+  if($("g-wrap"))mountGoogleButton();
 }
+var gBtnTries=0;
+function mountGoogleButton(){
+  var el=$("g-wrap");if(!el||!GOOGLE_CLIENT_ID)return;
+  gBtnTries=0;
+  (function tick(){
+    el=$("g-wrap");if(!el)return;
+    if(window.google&&window.google.accounts&&window.google.accounts.id){
+      google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogleCred});
+      el.innerHTML="";
+      var w=Math.round(el.getBoundingClientRect().width)||280;
+      google.accounts.id.renderButton(el,{theme:"outline",size:"large",text:"continue_with",width:Math.max(220,Math.min(360,w))});
+      return;
+    }
+    if(++gBtnTries>40)return;
+    setTimeout(tick,150);
+  })();
+}
+window.onGoogleCred=function(resp){
+  googleSign(resp&&resp.credential,$("em-cc")?$("em-cc").value:"");
+};
 
 // ---------- Sheets ----------
 function seg(items,cur,name){
@@ -3343,10 +3604,10 @@ function renderRules(){
   $("rules-close").addEventListener("click",closeSheets);
 }
 function showWin(){
-  var t=L(),order=g.order||g.rank.concat(g.players.map(function(x,i){return i}).filter(function(i){return g.rank.indexOf(i)<0})),first=g.players[order[0]],h='<div class="dot" style="background:'+CSSC[first.seat]+'"></div><h2>'+esc(t.wins(first.name))+'</h2><ol class="places">';
+  var t=L(),order=g.order||g.rank.concat(g.players.map(function(x,i){return i}).filter(function(i){return g.rank.indexOf(i)<0})),first=g.players[order[0]],h='<div class="dot" style="background:'+CSSC[visSeat(first.seat)]+'"></div><h2>'+esc(t.wins(first.name))+'</h2><ol class="places">';
   order.forEach(function(pi,i){
     var pl=g.players[pi];
-    h+='<li><em>'+t.ord[i]+'</em><i style="background:'+CSSC[pl.seat]+'"></i><b>'+esc(pl.name)+'</b><span>'+((g.out||[]).indexOf(pi)>=0?t.outTag:pl.key?"+"+fmt(g.gains[pi]||0)+" ★":(pl.kind==="cpu"?t.cpu:""))+'</span></li>';
+    h+='<li><em>'+t.ord[i]+'</em><i style="background:'+CSSC[visSeat(pl.seat)]+'"></i><b>'+esc(pl.name)+'</b><span>'+((g.out||[]).indexOf(pi)>=0?t.outTag:pl.key?"+"+fmt(g.gains[pi]||0)+" ★":(pl.kind==="cpu"?t.cpu:""))+'</span></li>';
   });
   g.players.forEach(function(pl,pi){var sk=pl.key&&g.streaks&&g.streaks[pi];if(sk)h+='</ol><p class="streak">'+esc(t.streak(sk.k,fmt(sk.n)))+'</p><ol class="places" style="display:none">'});
   armClose();
@@ -3396,7 +3657,7 @@ function openScores(){
   $("scores-close").addEventListener("click",closeSheets);
   $("sheet-scores").classList.add("open");
 }
-function closeSheets(){["sheet-setup","sheet-rules","sheet-scores","sheet-online","sheet-chat","sheet-owner","sheet-win"].forEach(function(id){$(id).classList.remove("open")})}
+function closeSheets(){["sheet-setup","sheet-rules","sheet-scores","sheet-online","sheet-chat","sheet-owner","sheet-win"].forEach(function(id){$(id).classList.remove("open")});syncGate()}
 function setLang(l){
   lang=l;langManual=true;try{localStorage.setItem("ludo-lang",l);localStorage.setItem("ludo-lang-m","1")}catch(e){}
   if($("sheet-online").classList.contains("open"))renderOnline();
@@ -3408,7 +3669,8 @@ function setLang(l){
 $("roll").addEventListener("click",function(){if(isHuman(g.turn))doRoll()});
 $("btn-new").addEventListener("click",function(){renderSetup();$("sheet-setup").classList.add("open")});
 $("btn-scores").addEventListener("click",openScores);
-$("btn-online").addEventListener("click",function(){onErr="";publishMe();openOnline()});
+$("btn-online").addEventListener("click",function(){onErr="";onlineView="play";publishMe();openOnline()});
+$("btn-settings").addEventListener("click",function(){onErr="";onlineView="settings";publishMe();openOnline()});
 $("btn-sound").addEventListener("click",function(){
   soundOn=!soundOn;try{localStorage.setItem("ludo-sound",soundOn?"1":"0")}catch(e){}
   renderAll();
@@ -3447,7 +3709,7 @@ function boot(data){
     else{g.dice=[];g.rolled=null;beginTurn()}
   }else{
     cfg.stake=0;startGame();
-    if(firstVisit){renderSetup();$("sheet-setup").classList.add("open")}
+    openOnline();
   }
   var savedRoom="";
   try{savedRoom=localStorage.getItem("ludo-room")||""}catch(e){}
@@ -3474,7 +3736,7 @@ window.addEventListener("storage",function(e){
   if((o&&o.uid)!==(pAuth&&pAuth.uid)){clearTimeout(acctT);location.reload()}
 });
 // ---------- Updates: tell the player when a newer version of the game is online ----------
-var BUILD="55";
+var BUILD="70";
 if($("ver"))$("ver").textContent="· v"+BUILD;
 function checkUpdate(){
   if(NAT)return;
@@ -3493,7 +3755,7 @@ function checkUpdate(){
 }
 setTimeout(checkUpdate,4000);setInterval(checkUpdate,180000);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)checkUpdate()});
-boot({});
+boot({});syncGate();
 if(!NAT&&"serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
 </script>
 </body>
