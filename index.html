@@ -1630,25 +1630,23 @@ function renderAll(){
 
 // ---------- Messages from our own companies (display only) ----------
 var ADS=[
- {mk:"PAH",url:"https://www.instagram.com/planetautohub/",img:"icons/ad-pah.png",c:"#3c459f",name:"Planet Auto Hub",
+ {mk:"PAH",url:"https://planetautohub.com/",img:"icons/ad-pah.png",c:"#3c459f",name:"Planet Auto Hub",
   en:["Car parts in Dakar","Toyota · Great Wall · Bosch · Bardahl","@planetautohub"],
   fr:["Pièces auto à Dakar","Toyota · Great Wall · Bosch · Bardahl","@planetautohub"],
   it:["Ricambi auto a Dakar","Toyota · Great Wall · Bosch · Bardahl","@planetautohub"]},
- {mk:"NF",url:"https://www.instagram.com/planetautohub/",img:"icons/ad-nf.png",c:"#4f8a4c",name:"Nioro Farms",
+ {mk:"NF",url:"https://niorofarms.com/",img:"icons/ad-nf.png",c:"#4f8a4c",name:"Nioro Farms",
   en:["From the motherland to your shelves","Hibiscus · Baobab · Tamarind · Mango · Cashews · Moringa","niorofarms.com"],
   fr:["De la terre mère à vos rayons","Bissap · Baobab · Tamarin · Mangue · Cajou · Moringa","niorofarms.com"],
   it:["Dalla terra madre ai vostri scaffali","Ibisco · Baobab · Tamarindo · Mango · Anacardi · Moringa","niorofarms.com"]},
- {mk:"JV",url:"https://www.instagram.com/jollofventures/",img:"icons/ad-jv.png",c:"#ea4e1b",name:"Jollof Ventures",
+ {mk:"JV",url:"https://jollofventures.com/",img:"icons/ad-jv.png",c:"#ea4e1b",name:"Jollof Ventures",
   en:["African potential. A brighter tomorrow.","AI & Tech · Fintech · Energy · Agribusiness · Healthcare · Logistics","invest@jollofventures.com"],
   fr:["Le potentiel africain. Un avenir plus radieux.","IA & Tech · Fintech · Énergie · Agrobusiness · Santé · Logistique","invest@jollofventures.com"],
   it:["Potenziale africano. Un domani più luminoso.","IA & Tech · Fintech · Energia · Agribusiness · Sanità · Logistica","invest@jollofventures.com"]},
- {mk:"FASA",url:"https://www.instagram.com/planetautohub/",img:"icons/ad-fasa.png",c:"#f5b21a",name:"Fasa",
-  en:["By Fama","",""],fr:["By Fama","",""],it:["By Fama","",""]},
- {mk:"SUP",url:"https://www.instagram.com/planetautohub/",img:"icons/ad-sup.png",c:"#e8201f",name:"SUPERIOR",
+ {mk:"SUP",url:"https://www.superior.sn/",img:"icons/ad-sup.png",c:"#e8201f",name:"SUPERIOR",
   en:["Outboard motor dealer!","",""],fr:["Concessionnaire de moteurs hors-bord !","",""],it:["Concessionario di motori fuoribordo!","",""]},
  {mk:"EGT",url:"https://www.elitegtravel.com/",img:"icons/ad-egt.png",c:"#0aa3e3",name:"EGT",
   en:["Elite Global Travel LLC","",""],fr:["Elite Global Travel LLC","",""],it:["Elite Global Travel LLC","",""]},
- {mk:"NR",url:"",img:"",c:"#7a4fd1",name:"Nioro Resources",
+ {mk:"NR",url:"https://niororesources.com/",img:"icons/ad-nr.png",c:"#7a4fd1",name:"Nioro Resources",
   en:["Consulting and apps, US ↔ Senegal","Business advisory · Apps & games",""],
   fr:["Conseil et applications, États-Unis ↔ Sénégal","Conseil aux entreprises · Apps et jeux",""],
   it:["Consulenza e app, USA ↔ Senegal","Consulenza aziendale · App e giochi",""]}
@@ -2381,7 +2379,7 @@ var GATE_IC={users:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" 
 function gateFeatures(t){return '<ul class="gate-feat">'+[["users",t.gateF1],["trophy",t.gateF2],["dice",t.gateF3]].map(function(r){return '<li>'+GATE_IC[r[0]]+'<span>'+r[1]+'</span></li>'}).join("")+'</ul>'}
 // No gameplay, local or online, for a visitor who has not signed in. Closes once they do.
 function renderGate(){
-  var t=L(),spons=ADS.map(function(a){return '<img src="'+a.img+'" alt="'+esc(a.name)+'" loading="lazy">'}).join("");
+  var t=L(),spons=ADS.filter(function(a){return a.img}).map(function(a){return '<img src="'+a.img+'" alt="'+esc(a.name)+'" loading="lazy">'}).join("");
   $("panel-gate").innerHTML='<div class="adtop" id="gate-adtop" role="complementary"></div>'+
     '<div class="gate-banner">'+
     '<div class="gate-wordmark"><span class="gw-l" style="background:var(--red)">L</span><span class="gw-l" style="background:var(--green)">U</span><span class="gw-l" style="background:var(--blue)">D</span><span class="gw-l" style="background:var(--yellow);color:#1a1500">O</span><b class="gw-word">Teranga</b></div>'+
@@ -3501,7 +3499,7 @@ function scramble(s){
     return Array.prototype.map.call(new Uint8Array(b),function(x){return ("0"+x.toString(16)).slice(-2)}).join("").slice(0,40);
   });
 }
-function saveAcct(){try{if(acct)localStorage.setItem("ludo-acct",JSON.stringify(acct));else localStorage.removeItem("ludo-acct")}catch(e){}}
+function saveAcct(){try{if(acct)localStorage.setItem("ludo-acct",JSON.stringify(acct));else localStorage.removeItem("ludo-acct")}catch(e){}if(acct&&typeof checkUpdate==="function")setTimeout(checkUpdate,300)}
 function acctDoc(){
   var nm=meName(),pr=bank.profiles[keyOf(nm)]||{};
   return {id:myId,fc:myFc,name:nm,av:meAv(),pts:typeof pr.pts==="number"?pr.pts:WELCOME,games:pr.games||0,wins:pr.wins||0,caps:pr.caps||0,best:pr.best||0,run:pr.run||0,day:pr.day||"",friends:friends.slice(0,40),cc:(acct&&acct.cc)||"",mig:acct&&acct.mig?1:0,uname:(acct&&acct.uname)||"",unameAt:(acct&&acct.unameAt)||0,t:Date.now()};
@@ -4293,14 +4291,20 @@ window.addEventListener("storage",function(e){
   if((o&&o.uid)!==(pAuth&&pAuth.uid)){clearTimeout(acctT);location.reload()}
 });
 // ---------- Updates: tell the player when a newer version of the game is online ----------
-var BUILD="121";
+var BUILD="126";
 if($("ver"))$("ver").textContent="· v"+BUILD;
 function applyUpdate(){
   var bar=$("update-bar");
   bar.className="invite update open";
   bar.innerHTML='<span>'+L().updating+'</span>';
+  // loop guard: at most 2 automatic reloads per minute, so a stale CDN copy can never trap a player
+  try{var n=+sessionStorage.getItem("ludo-upd-n")||0,t=+sessionStorage.getItem("ludo-upd-t")||0,now=Date.now();
+    if(now-t>60000){n=0}
+    if(n>=2){bar.className="invite update";bar.innerHTML="";return}
+    sessionStorage.setItem("ludo-upd-n",String(n+1));sessionStorage.setItem("ludo-upd-t",String(now))}catch(e){}
   var go=function(){location.reload()};
-  try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(function(r){return r?r.update():null}).then(go,go);else go()}catch(e){go()}
+  var wipe=function(){return window.caches&&caches.keys?caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k)}))}):null};
+  try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(function(r){return r?r.update():null}).then(wipe).then(go,go);else Promise.resolve(wipe()).then(go,go)}catch(e){go()}
 }
 function checkUpdate(){
   if(NAT)return;
@@ -4318,7 +4322,7 @@ function checkUpdate(){
     $("update-go").addEventListener("click",applyUpdate);
   }).catch(function(){});
 }
-setTimeout(checkUpdate,4000);setInterval(checkUpdate,180000);
+setTimeout(checkUpdate,1500);setInterval(checkUpdate,180000);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)checkUpdate()});
 boot({});syncGate();
 if(!NAT&&"serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
