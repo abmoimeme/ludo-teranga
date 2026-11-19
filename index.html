@@ -318,10 +318,10 @@ h1 span{color:var(--accent);display:block}
 .ghost{background:none;border:1.5px solid var(--muted);border-radius:14px;min-height:48px;font-weight:700}
 .or-div{display:flex;align-items:center;gap:10px;margin:10px 0;color:var(--muted);font-size:.85rem}
 .or-div::before,.or-div::after{content:"";flex:1;height:1px;background:var(--muted);opacity:.4}
-.g-wrap{min-height:48px;display:flex;justify-content:center}
-.apple-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:none;box-sizing:border-box;margin:8px 0 0;min-height:44px;padding:0 16px;border:0;border-radius:var(--r-md,12px);background:#000;color:#fff;font:600 1rem/1 -apple-system,system-ui,"Segoe UI",sans-serif;cursor:pointer}
+.g-wrap{color-scheme:light;display:flex;justify-content:center;min-height:40px;margin-top:var(--s2)}
+.apple-btn{display:flex;align-items:center;justify-content:center;gap:var(--s2);width:100%;box-sizing:border-box;margin:0;height:40px;min-height:40px;padding:0 var(--s4);border:1px solid #000;border-radius:4px;background:#000;color:#fff;font:600 15px/1 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;letter-spacing:-.01em;cursor:pointer}
 .apple-btn:disabled{opacity:.5;cursor:default}
-.apple-btn svg{flex:none;margin-top:-2px}
+.apple-btn svg{flex:none;margin-top:-2px;width:16px;height:19px}
 .win{align-items:center}
 .win .panel{border-radius:20px;text-align:center;max-width:340px;margin:16px}
 .win .dot{width:64px;height:64px;border-radius:50%;margin:0 auto;border:4px solid #fff}
@@ -352,6 +352,37 @@ h1 span{color:var(--accent);display:block}
 .gate-spons img{animation:none;border-width:1px;border-radius:var(--r-sm)}
 .lobby-bal{background:var(--surface-2);border:1px solid var(--border)}
 .panel{border-radius:var(--r-lg) var(--r-lg) 0 0}
+/* Build 100: home and sign-up cards fill the phone screen instead of floating in the middle. */
+.sheet.gate,.sheet.lobby{align-items:stretch;justify-content:center}
+.sheet.gate .panel,.sheet.lobby .panel{max-width:540px;width:100%;margin:0 auto;height:100%;max-height:100%;border-radius:0;border-left:0;border-right:0;border-top:0;border-bottom:0;padding:max(var(--s4),env(safe-area-inset-top)) var(--s4) max(var(--s4),env(safe-area-inset-bottom));gap:var(--s4);justify-content:space-between;box-sizing:border-box}
+.sheet.gate .gate-banner,.sheet.lobby .gate-banner{border-radius:var(--r-lg);margin:0;width:100%;padding:var(--s5) var(--s4);border:1px solid var(--border)}
+.sheet.lobby .lobby-tiles{flex:1 1 auto;max-height:220px;min-height:112px}
+.sheet.lobby .lobby-tiles .tile{min-height:0;font-size:1.2rem}
+.sheet.lobby .lobby-tiles .tile i{font-size:2.2rem}
+.sheet.lobby .lobby-mini button{min-height:52px;font-size:.85rem}
+.sheet.gate #gate-go{margin-top:auto}
+.sheet.gate .adtop,.sheet.lobby .adtop{flex:none;max-width:100%;width:100%;box-sizing:border-box}
+.sheet.lobby .lobby-tiles{max-height:180px}
+.sheet.gate .gate-feat{list-style:none;margin:auto 0;padding:0;display:grid;gap:var(--s3);text-align:left;width:100%}
+.sheet.gate .gate-feat li{display:flex;align-items:center;gap:var(--s3);padding:var(--s4);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);font-weight:600;font-size:1rem;margin:0}
+.sheet.gate .gate-feat svg{flex:none;color:var(--accent)}
+@media (max-height:700px){.sheet.gate .gate-feat li:nth-child(n+3){display:none}.sheet.gate .gate-feat li{padding:var(--s3)}}
+@media (max-height:620px){.sheet.gate .gate-feat{display:none}}
+.lobby-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2)}
+.lobby-stats div{display:grid;gap:var(--s1);padding:var(--s3) var(--s2);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md)}
+.lobby-stats b{font-family:var(--display);font-size:1.4rem;line-height:1;color:var(--ink)}
+.lobby-stats span{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+@media (max-height:700px){.lobby-stats{display:none}}
+/* Settings sheet fills the screen; Apple and Google match the Sign in button */
+#sheet-online{align-items:stretch;background:var(--cloth-2,#1b2452)}
+#sheet-online .panel{max-height:100%;height:100%;border-radius:0;padding-top:max(var(--s4),env(safe-area-inset-top));padding-bottom:max(22px,env(safe-area-inset-bottom));box-sizing:border-box}
+.apple-btn{height:52px;min-height:52px;border-radius:var(--r-md);font-size:1.05rem}
+.apple-btn svg{width:18px;height:22px}
+.g-wrap{position:relative;display:block;min-height:0;height:auto;margin-top:var(--s2)}
+.g-wrap.ready{height:52px;background:#fff;border:1px solid #dadce0;border-radius:var(--r-md);box-sizing:border-box;overflow:hidden;color:#3c4043}
+.g-vis{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:var(--s3);font:600 1.05rem/1 -apple-system,BlinkMacSystemFont,"Roboto",system-ui,sans-serif;pointer-events:none}
+.g-vis svg{width:20px;height:20px;flex:none}
+.g-hit{position:absolute;left:0;top:0;opacity:.01;transform-origin:0 0;z-index:2}
 </style>
 </head>
 <body>
@@ -837,7 +868,14 @@ var IT={sub:"Regole di casa dell'Africa occidentale",roll:"Tira",newGame:"Nuova 
 T.it=Object.assign({},T.en,IT);T.it.r=Object.assign({},T.en.r,IT.r);
 T.en.gateTag="Free to play";T.fr.gateTag="Gratuit";T.it.gateTag="Gratis";
 T.en.gateTitle="Sign up to play Ludo Teranga";T.fr.gateTitle="Inscrivez-vous pour jouer à Ludo Teranga";T.it.gateTitle="Iscriviti per giocare a Ludo Teranga";
-T.en.gateSub="Create a free account to play against friends or the computer, the Senegalese way.";T.fr.gateSub="Créez un compte gratuit pour jouer entre amis ou contre l'ordinateur, à la sénégalaise.";T.it.gateSub="Crea un account gratuito per giocare con gli amici o contro il computer, alla senegalese.";
+T.en.gateSub="Create a free account to play online with friends and keep your points, the Senegalese way.";T.fr.gateSub="Créez un compte gratuit pour jouer en ligne entre amis et garder vos points, à la sénégalaise.";T.it.gateSub="Crea un account gratuito per giocare online con gli amici e tenere i tuoi punti, alla senegalese.";
+T.en.gateF1="Play online with friends, up to 4 players";T.fr.gateF1="Jouez en ligne entre amis, jusqu'à 4 joueurs";T.it.gateF1="Gioca online con gli amici, fino a 4 giocatori";
+T.en.gateF2="Win points and climb the leaderboard";T.fr.gateF2="Gagnez des points et montez au classement";T.it.gateF2="Vinci punti e scala la classifica";
+T.en.gateF3="Play the computer any time";T.fr.gateF3="Jouez contre l'ordinateur à tout moment";T.it.gateF3="Gioca contro il computer quando vuoi";
+T.en.gateGuest="Play the computer as a guest";T.fr.gateGuest="Jouer contre l'ordinateur en invité";T.it.gateGuest="Gioca contro il computer come ospite";
+T.en.guestSave="Sign in to save your points and play online";T.fr.guestSave="Connectez-vous pour garder vos points et jouer en ligne";T.it.guestSave="Accedi per salvare i punti e giocare online";
+T.en.hGames="Games";T.fr.hGames="Parties";T.it.hGames="Partite";
+T.en.hWins="Wins";T.fr.hWins="Victoires";T.it.hWins="Vittorie";
 T.en.gateCta="Sign in or create an account";T.fr.gateCta="Se connecter ou créer un compte";T.it.gateCta="Accedi o crea un account";
 T.en.gateWith="With our sponsors";T.fr.gateWith="Avec nos sponsors";T.it.gateWith="Con i nostri sponsor";
 T.en.closesIn=function(n){return "This room closes in "+n+" s"};T.fr.closesIn=function(n){return "Ce salon ferme dans "+n+" s"};T.it.closesIn=function(n){return "Questa stanza chiude tra "+n+" s"};
@@ -877,6 +915,7 @@ T.en.orWord="or";T.fr.orWord="ou";T.it.orWord="o";
 T.en.youTag="YOU";T.fr.youTag="VOUS";T.it.youTag="TU";
 T.en.googleFail="Google sign-in failed. Try again.";T.fr.googleFail="La connexion Google a échoué. Réessayez.";T.it.googleFail="Accesso Google non riuscito. Riprova.";
 T.en.appleFail="Apple sign-in failed. Try again.";T.fr.appleFail="La connexion Apple a échoué. Réessayez.";T.it.appleFail="Accesso Apple non riuscito. Riprova.";
+T.en.googleBtn="Continue with Google";T.fr.googleBtn="Continuer avec Google";T.it.googleBtn="Continua con Google";
 T.en.appleBtn="Continue with Apple";T.fr.appleBtn="Continuer avec Apple";T.it.appleBtn="Continua con Apple";
 T.en.idpSetup="This sign-in option is not ready yet. Use your email and password for now.";T.fr.idpSetup="Cette option de connexion n'est pas encore prête. Utilisez votre e-mail et votre mot de passe pour l'instant.";T.it.idpSetup="Questa opzione di accesso non è ancora pronta. Per ora usa e-mail e password.";
 T.en.idpExists="This email already has a Ludo Teranga login. Sign in the way you did the first time (email and password, or Google).";T.fr.idpExists="Cette adresse e-mail a déjà un compte Ludo Teranga. Connectez-vous comme la première fois (e-mail et mot de passe, ou Google).";T.it.idpExists="Questa e-mail ha già un account Ludo Teranga. Accedi come la prima volta (e-mail e password, o Google).";
@@ -2087,7 +2126,10 @@ function enter(code,room){
 }
 // A player must pick a name before creating or joining an online game.
 function hasName(){var hs=humanSeats();return !!(((cfg.me&&cfg.me.name)||"").trim()||(hs.length&&(cfg.names[hs[0]]||"").trim()))}
+// A name is optional: a player who has not typed one gets a plain starting name and can change it in Settings.
+function ensureName(){if(hasName())return;if(!cfg.me)cfg.me={};cfg.me.name="Player"+(100+Math.floor(Math.random()*900));saveCfg()}
 function needName(){
+  ensureName();
   if(hasName()&&cleanText(meName())===meName())return false;
   onErr=hasName()?L().errBadName:L().errName;onlineView="settings";renderOnline();
   var el=$("me-name");if(el){el.focus();el.classList.add("bad")}
@@ -2214,6 +2256,8 @@ function invite(){
   show("");
 }
 function openOnline(){refreshFriends();renderOnline();$("sheet-online").classList.add("open")}
+var GATE_IC={users:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M17 14c2.4 0 4 1.7 4 4.2"/></svg>',trophy:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1.5A3 3 0 0 0 8 10.5M16 6h3v1.5a3 3 0 0 1-3 3"/><path d="M12 13v4M8.5 20h7M10 17h4"/></svg>',dice:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r=".6"/><circle cx="15" cy="9" r=".6"/><circle cx="12" cy="12" r=".6"/><circle cx="9" cy="15" r=".6"/><circle cx="15" cy="15" r=".6"/></svg>'};
+function gateFeatures(t){return '<ul class="gate-feat">'+[["users",t.gateF1],["trophy",t.gateF2],["dice",t.gateF3]].map(function(r){return '<li>'+GATE_IC[r[0]]+'<span>'+r[1]+'</span></li>'}).join("")+'</ul>'}
 // No gameplay, local or online, for a visitor who has not signed in. Closes once they do.
 function renderGate(){
   var t=L(),spons=ADS.map(function(a){return '<img src="'+a.img+'" alt="'+esc(a.name)+'" loading="lazy">'}).join("");
@@ -2222,14 +2266,20 @@ function renderGate(){
     '<div class="gate-wordmark"><span class="gw-l" style="background:var(--red)">L</span><span class="gw-l" style="background:var(--green)">U</span><span class="gw-l" style="background:var(--blue)">D</span><span class="gw-l" style="background:var(--yellow);color:#1a1500">O</span><b class="gw-word">Teranga</b></div>'+
     '</div>'+
     '<h2>'+t.gateTitle+'</h2><p class="note" style="margin:0">'+t.gateSub+'</p>'+
+    gateFeatures(t)+
     '<div class="gate-spons"><span class="gate-spons-label">'+t.gateWith+'</span>'+spons+'</div>'+
-    '<div class="ad" id="gate-ad" role="complementary"></div>'+
-    '<button type="button" class="cta" id="gate-go" style="width:100%">'+t.gateCta+'</button>';
+    '<button type="button" class="cta" id="gate-go" style="width:100%">'+t.gateCta+'</button>'+
+    '<button type="button" class="ghost" id="gate-guest" style="width:100%;margin:0">'+t.gateGuest+'</button>';
   renderAd();
+  $("gate-guest").addEventListener("click",function(){setGuest(true);$("sheet-gate").classList.remove("open");openLobby()});
   $("gate-go").addEventListener("click",function(){onErr="";$("sheet-gate").classList.remove("open");closeLobby();onlineView="settings";openOnline()});
 }
 // The simple home screen shown once a player is past the sign-in gate: two big choices (play
 // online, or a local game), and the smaller everyday actions underneath.
+function lobbyStats(t){
+  var pr=profileOf(meName())||{},c=[[t.hGames,pr.games||0],[t.hWins,pr.wins||0],[t.stRun,pr.run||0]];
+  return '<div class="lobby-stats">'+c.map(function(r){return '<div><b>'+fmt(r[1])+'</b><span>'+esc(r[0])+'</span></div>'}).join("")+'</div>';
+}
 function renderLobby(){
   var t=L(),resume=resumable&&g&&!g.over;
   // While still an active player in a live game with others, hide these two home-screen choices too
@@ -2240,6 +2290,8 @@ function renderLobby(){
     '<div class="gate-wordmark"><span class="gw-l" style="background:var(--red)">L</span><span class="gw-l" style="background:var(--green)">U</span><span class="gw-l" style="background:var(--blue)">D</span><span class="gw-l" style="background:var(--yellow);color:#1a1500">O</span><b class="gw-word">Teranga</b></div>'+
     '</div>'+
     '<span class="lobby-bal">★ '+fmt(balanceOf(meName()))+'</span>'+
+    (guestOn&&!pAuth?'<button type="button" class="ghost" id="lobby-signin" style="min-height:44px">'+esc(t.guestSave)+'</button>':'')+
+    lobbyStats(t)+
     (inPlay?'':'<div class="lobby-tiles"><button type="button" class="tile tile-gold" id="lobby-online"><i>🌍</i>'+esc(t.online)+'</button>'+
     '<button type="button" class="tile tile-blue" id="lobby-new"><i>🎮</i>'+(resume?esc(t.resumeGame):esc(t.newGame))+'</button></div>'+
     (resume?'<button type="button" class="ghost" id="lobby-fresh" style="min-height:38px">'+esc(t.newGameInstead)+'</button>':''))+
@@ -2249,6 +2301,7 @@ function renderLobby(){
     '<button type="button" id="lobby-settings">⚙️</button></div>'+
     '<div class="ad" id="lobby-ad" role="complementary"></div>';
   renderAd();
+  if($("lobby-signin"))$("lobby-signin").addEventListener("click",function(){setGuest(false);closeLobby();syncGate()});
   if($("lobby-online"))$("lobby-online").addEventListener("click",function(){closeLobby();onErr="";onlineView="play";leaveAsk=false;publishMe();openOnline()});
   if($("lobby-new"))$("lobby-new").addEventListener("click",function(){
     if(resume){closeLobby();return}
@@ -2262,9 +2315,11 @@ function renderLobby(){
 }
 function openLobby(){renderLobby();$("sheet-lobby").classList.add("open")}
 function closeLobby(){$("sheet-lobby").classList.remove("open")}
+var guestOn=false;try{guestOn=localStorage.getItem("ludo-guest")==="1"}catch(e){}
+function setGuest(v){guestOn=!!v;try{if(v)localStorage.setItem("ludo-guest","1");else localStorage.removeItem("ludo-guest")}catch(e){}}
 function syncGate(){
   if(!EMAIL_ON)return;
-  if(pAuth){$("sheet-gate").classList.remove("open")}
+  if(pAuth||guestOn){$("sheet-gate").classList.remove("open")}
   else{renderGate();$("sheet-gate").classList.add("open")}
 }
 function refreshMyAvs(){
@@ -2291,7 +2346,7 @@ function renderOnline(){
     if(onlineView!=="settings")h+='<p class="note" style="margin:0">'+t.onNote+'</p>';
     h+=seg([["play",t.tabPlay],["settings",t.tabSettings]],onlineView,"onview");
     if(onlineView==="settings"){
-      h+='<div><h3>'+t.yourName+'</h3><div class="who"><input type="text" id="me-name" maxlength="12" autocomplete="off" placeholder="'+esc(hasName()?meName():t.namePh)+'" value="'+esc((cfg.me&&cfg.me.name)||"")+'" aria-label="'+t.yourName+'"><span class="bal" id="me-bal">★ '+fmt(balanceOf(meName()))+'</span></div><div class="avs" id="avs-me" style="margin-top:8px"></div></div>';
+      if(acct||pAuth)h+='<div><h3>'+t.yourName+'</h3><div class="who"><input type="text" id="me-name" maxlength="12" autocomplete="off" placeholder="'+esc(hasName()?meName():t.namePh)+'" value="'+esc((cfg.me&&cfg.me.name)||"")+'" aria-label="'+t.yourName+'"><span class="bal" id="me-bal">★ '+fmt(balanceOf(meName()))+'</span></div><div class="avs" id="avs-me" style="margin-top:8px"></div></div>';
       h+=acctHTML();
       h+=blockedHTML();
       h+=prefsHTML();
@@ -3078,9 +3133,10 @@ window.addEventListener("pagehide",function(){if(seen&&seenDirty>0)seenFlush()})
 // Switched on when the project's key is present in config.js. The password is sent to the sign-in service
 // only and is never kept; the device keeps a renewal token so the player stays signed in.
 var API_KEY=String(CFG.apiKey||""),EMAIL_ON=!!API_KEY;
-var GOOGLE_CLIENT_ID="263422155646-10h439cj74jmeaqngha5in3a79nkedso.apps.googleusercontent.com";
+// Inside the phone app the web Google and Apple windows cannot open, so only email shows there until native sign-in is added.
+var GOOGLE_CLIENT_ID=NAT?"":"263422155646-10h439cj74jmeaqngha5in3a79nkedso.apps.googleusercontent.com";
 // Sign in with Apple: shown only once the Apple Services ID is in config.js (appleId).
-var APPLE_ID=String(CFG.appleId||""),APPLE_JS="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
+var APPLE_ID=(NAT&&!NAT.appleSignIn)?"":String(CFG.appleId||""),APPLE_JS="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
 var pAuth=null,pTok=null,pTokP=null,legacyAid="",authBusy=false;
 try{pAuth=JSON.parse(localStorage.getItem("ludo-auth")||"null")}catch(e){}
 if(!pAuth||typeof pAuth!=="object"||!pAuth.rt||!pAuth.uid)pAuth=null;
@@ -3487,7 +3543,7 @@ function emailSign(email,pw,create,cc){
   if(!emailOk(email)){logEv(authKind+"_fail","bad_email");onErr=L().emInvalid;renderOnline();focusBad("em-mail");return}
   if(!pw){logEv(authKind+"_fail","no_password");onErr=L().emNoPw;renderOnline();focusBad("em-pw");return}
   if(create&&pw.length<8){logEv("signup_fail","weak_password");onErr=L().emWeak;renderOnline();focusBad("em-pw");return}
-  if(create&&!hasName()){logEv("signup_fail","no_name");onErr=L().emName;renderOnline();focusBad("me-name");return}
+  if(create)ensureName();
   logEv(authKind+"_try");
   authBusy=true;renderOnline();
   authCall(create?"accounts:signUp":"accounts:signInWithPassword",{email:email,password:pw,returnSecureToken:true}).then(function(j){
@@ -3591,7 +3647,7 @@ function appleRevoke(code){
 function afterAuth(cc){
   var uid=pAuth.uid,hint=maskMail(pAuth.email);
   function done(){
-    authBusy=false;autoLang(langOfCc(acct.cc));publishMe();openInbox();checkVerified();seenStart();renderOnline();syncGate();if(g)renderAll();
+    setGuest(false);authBusy=false;autoLang(langOfCc(acct.cc));publishMe();openInbox();checkVerified();seenStart();renderOnline();syncGate();if(g)renderAll();
   }
   return dbx("GET","/accounts/"+uid).then(function(d){
     if(d&&d.id&&d.fc){
@@ -3614,11 +3670,11 @@ function afterAuth(cc){
           dbx("DELETE","/accounts/"+was).catch(function(){});setLegacy("");logEv(authKind+"_ok","old_game_moved");done();
         },refused);
       }
-      if(!hasName()){logEv(authKind+"_fail","no_name");authBusy=false;onErr=L().emName;renderOnline();focusBad("me-name");return}
+      ensureName();
       acct={aid:uid,hint:hint,t:0,name:meName(),cc:String(cc||guessCc()),mig:0};
       var fd=acctDoc();
       return dbx("PUT","/accounts/"+uid,fd).then(function(){
-        acct.t=fd.t;acct.b=baseOf(fd);saveAcct();acctNote=L().acctMade2;statAdd({"new":1});setLegacy("");logEv(authKind+"_ok","new_game");done();
+        acct.t=fd.t;acct.b=baseOf(fd);saveAcct();acctNote=L().acctMade2;statAdd({"new":1});setLegacy("");logEv(authKind+"_ok","new_game");done();setTimeout(function(){var el=$("me-name");if(el){el.scrollIntoView&&el.scrollIntoView({block:"center"});el.focus()}},400);
       },refused);
     });
   });
@@ -3694,8 +3750,8 @@ function emailAcctHTML(){
   h+='<select class="fld" id="em-cc" aria-label="'+t.phCc+'">'+CCN.map(function(c){return '<option value="'+c[0]+'"'+(c[0]===cc?" selected":"")+'>'+c[1]+'</option>'}).join("")+'</select>';
   h+='<button type="button" class="cta" id="em-in"'+(authBusy?" disabled":"")+'>'+t.emIn+'</button><button type="button" class="ghost" id="em-new" style="margin:0"'+(authBusy?" disabled":"")+'>'+t.emNew+'</button></div>';
   if(GOOGLE_CLIENT_ID||APPLE_ID)h+='<div class="or-div">'+t.orWord+'</div>';
-  if(GOOGLE_CLIENT_ID)h+='<div class="g-wrap" id="g-wrap"></div>';
   if(APPLE_ID)h+='<button type="button" class="apple-btn" id="ap-in"'+(authBusy?" disabled":"")+'><svg viewBox="0 0 20 24" width="16" height="19" aria-hidden="true"><path fill="currentColor" d="M16.4 12.7c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1zM13.9 5c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.2.1 2.3-.6 3.1-1.5z"/></svg><span>'+t.appleBtn+'</span></button>';
+  if(GOOGLE_CLIENT_ID)h+='<div class="g-wrap" id="g-wrap"></div>';
   h+=(acctNote?'<p class="note" style="color:var(--accent)" role="status">'+esc(acctNote)+'</p>':"");
   h+='<p class="note" style="text-align:center"><button type="button" class="mini" id="em-reset" style="color:var(--accent);border-color:var(--accent);font-weight:800">'+t.emForgot+'</button></p>';
   h+='<p class="note">'+t.acctNote2+'</p><p class="note"><a href="privacy.html"'+BLANK+'>'+t.terms+'</a></p></div>';
@@ -3764,7 +3820,15 @@ function mountGoogleButton(){
       google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogleCred});
       el.innerHTML="";
       var w=Math.round(el.getBoundingClientRect().width)||280;
-      google.accounts.id.renderButton(el,{theme:"outline",size:"large",text:"continue_with",width:Math.max(220,Math.min(360,w))});
+      var gw=Math.max(220,Math.min(400,w));
+      var hit=document.createElement("div");hit.className="g-hit";el.appendChild(hit);
+      google.accounts.id.renderButton(hit,{theme:"outline",size:"large",shape:"rectangular",logo_alignment:"left",text:"continue_with",width:gw});
+      hit.style.width=gw+"px";hit.style.height="40px";
+      hit.style.transform="scale("+(w/gw)+","+(52/40)+")";
+      var vis=document.createElement("div");vis.className="g-vis";
+      vis.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.2 5.4-4.7 7.1l7.6 5.9c4.4-4.1 6.9-10.1 6.9-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.600 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.500 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.8 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span></span>';
+      vis.lastChild.textContent=L().googleBtn||"Continue with Google";
+      el.insertBefore(vis,hit);el.className="g-wrap ready";
       return;
     }
     if(++gBtnTries>40)return;
@@ -4015,7 +4079,7 @@ window.addEventListener("storage",function(e){
   if((o&&o.uid)!==(pAuth&&pAuth.uid)){clearTimeout(acctT);location.reload()}
 });
 // ---------- Updates: tell the player when a newer version of the game is online ----------
-var BUILD="96";
+var BUILD="105";
 if($("ver"))$("ver").textContent="· v"+BUILD;
 function applyUpdate(){
   var bar=$("update-bar");
